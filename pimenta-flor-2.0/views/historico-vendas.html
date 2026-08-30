@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pimenta Flor - Histórico de Vendas</title><link rel="stylesheet" href="/style.css">
+<style>
+.top{display:flex;justify-content:space-between;gap:18px;align-items:end;flex-wrap:wrap;margin-bottom:24px}
+.filters{display:grid;grid-template-columns:1.4fr 1fr 1fr auto;gap:14px;align-items:end;margin-bottom:22px}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px}
+.sum{background:#fff;border:1px solid #e8dfda;border-radius:18px;padding:18px}.sum span{display:block;color:#9a8f88;font-size:11px;font-weight:700}.sum strong{font-size:23px;color:#332d2a}
+.actions{display:flex;gap:10px}.secondary{background:#fff;border:1px solid #e8dfda;padding:11px 16px;border-radius:13px;font-weight:700;cursor:pointer}
+.row{cursor:pointer}.detail{display:none;background:#fffaf8}.detail.open{display:table-row}.items{padding:16px}.items table{width:100%;border-collapse:collapse}.items th,.items td{padding:8px;border-bottom:1px solid #eee4df;text-align:left;font-size:12px}.items th{font-size:10px;color:#8f4f4a;text-transform:uppercase}
+.badge{padding:6px 9px;border-radius:9px;background:#f6e7e2;color:#8f4f4a;font-size:10px;font-weight:800}.empty{text-align:center;padding:35px;color:#9a8f88}
+@media(max-width:850px){.filters,.summary{grid-template-columns:1fr}.top{align-items:stretch}} @media print{.sidebar,.actions,.filters{display:none!important}.main-content{margin:0!important}.detail{display:table-row!important}}
+</style></head>
+<body>
+<div class="sidebar">
+<div class="logo-container"><div class="logo-circulo">PF</div><div class="logo-texto"><div class="logo-loja">Pimenta Flor</div><div class="logo-sub">Gestão da loja</div></div></div>
+<div class="menu-secao">Navegação</div>
+<a href="/" class="menu-item">🏠 Início</a><a href="/clientes" class="menu-item">👥 Clientes</a><a href="/produtos" class="menu-item">👙 Produtos</a><a href="/vendas" class="menu-item">🛒 Vendas</a><a href="/pendencias" class="menu-item">💰 Pendências</a><a href="/relatorios/vendas" class="menu-item active">📊 Histórico de Vendas</a><a href="/relatorios/estoque" class="menu-item">📦 Relatório de Estoque</a>
+</div>
+<main class="main-content">
+<div class="top"><div><h1>📊 Histórico de Vendas</h1><p>Consulte as vendas e veja exatamente todos os itens de cada compra.</p></div><div class="actions"><button class="secondary" onclick="limpar()">Limpar filtros</button><button class="btn-pimenta" onclick="window.print()">🖨️ Imprimir</button></div></div>
+<section class="filters card">
+<div class="form-group"><label>Buscar cliente / venda</label><input id="busca" type="search" placeholder="Nome ou ID da venda"></div>
+<div class="form-group"><label>Data inicial</label><input id="inicio" type="date"></div>
+<div class="form-group"><label>Data final</label><input id="fim" type="date"></div>
+<button class="btn-pimenta" onclick="carregar()">Buscar</button></section>
+<section class="summary"><div class="sum"><span>Vendas encontradas</span><strong id="qtd">0</strong></div><div class="sum"><span>Faturamento</span><strong id="fat">R$ 0,00</strong></div><div class="sum"><span>Itens vendidos</span><strong id="itens">0</strong></div></section>
+<section class="card" style="padding:0;overflow:hidden"><table class="tabela-clientes" style="border:0;box-shadow:none;width:100%"><thead><tr><th>Venda</th><th>Data / Hora</th><th>Cliente</th><th>Pagamento</th><th>Total</th><th>Detalhes</th></tr></thead><tbody id="body"><tr><td colspan="6" class="empty">Carregando...</td></tr></tbody></table></section>
+</main>
+<script>
+const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+const date=d=>{if(!d)return'-';const x=new Date(d);return isNaN(x)?esc(d):x.toLocaleString('pt-BR')};
+function toggle(id){document.getElementById('d'+id)?.classList.toggle('open')}
+function limpar(){busca.value='';inicio.value='';fim.value='';carregar()}
+async function carregar(){
+ body.innerHTML='<tr><td colspan="6" class="empty">Carregando...</td></tr>';
+ const p=new URLSearchParams();if(busca.value.trim())p.set('busca',busca.value.trim());if(inicio.value)p.set('data_inicio',inicio.value);if(fim.value)p.set('data_fim',fim.value);
+ try{
+  const r=await fetch('/api/relatorios/vendas/historico?'+p),d=await r.json();if(!r.ok)throw Error();
+  qtd.textContent=d.resumo.qtd_vendas;fat.textContent=money(d.resumo.faturamento);itens.textContent=d.resumo.qtd_itens;
+  if(!d.vendas.length){body.innerHTML='<tr><td colspan="6" class="empty">Nenhuma venda encontrada.</td></tr>';return}
+  body.innerHTML=d.vendas.map(v=>{const rows=(v.itens||[]).map(i=>'<tr><td>'+esc(i.nome)+'</td><td>'+i.quantidade+'</td><td>'+money(i.preco_unitario)+'</td><td>'+money(i.quantidade*i.preco_unitario)+'</td></tr>').join('')||'<tr><td colspan="4">Nenhum item.</td></tr>';
+  return '<tr class="row" onclick="toggle('+v.id+')"><td><b>#'+v.id+'</b></td><td>'+date(v.data_venda)+'</td><td>'+esc(v.cliente_nome||'Consumidor Final')+'</td><td><span class="badge">'+esc(v.tipo_pagamento||'-')+'</span></td><td><b>'+money(v.total)+'</b></td><td>👁️ Ver itens</td></tr><tr id="d'+v.id+'" class="detail"><td colspan="6"><div class="items"><b>Itens da venda #'+v.id+'</b><table><thead><tr><th>Produto</th><th>Qtd.</th><th>Unitário</th><th>Subtotal</th></tr></thead><tbody>'+rows+'</tbody></table></div></td></tr>'}).join('')
+ }catch(e){body.innerHTML='<tr><td colspan="6" class="empty">Não foi possível carregar o histórico.</td></tr>'}
+}
+busca.addEventListener('keydown',e=>{if(e.key==='Enter')carregar()});window.addEventListener('load',carregar);
+</script></body></html>

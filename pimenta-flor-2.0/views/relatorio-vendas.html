@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pimenta Flor - Relatório de Vendas</title>
+    
+    <!-- 1. Links do Google Fonts (Obrigatório para baixar a fonte) -->
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- 2. Seu arquivo de estilo externo -->
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+
+    <!-- Menu Lateral -->
+    <div class="sidebar">
+        <div class="logo-container">
+            <div class="logo-circulo">P</div>
+            <div class="logo-texto">
+                <span class="logo-loja">Pimenta Flor</span>
+                <span class="logo-sub">Gestão da Loja</span>
+            </div>
+        </div>
+        
+        <hr style="border: 0; border-top: 1px solid var(--borda-suave); margin-bottom: 20px;">
+
+        <a href="/" class="menu-item">📋 Início</a>
+        <a href="/clientes" class="menu-item">👥 Clientes</a>
+        <a href="/produtos" class="menu-item">📦 Produtos</a>
+        <a href="/vendas" class="menu-item">🛒 Vendas</a>
+        <a href="/pendencias" class="menu-item">📖 Pendências</a>
+
+        <div class="menu-secao">Relatórios</div>
+        <a href="/relatorios/estoque" class="menu-item">📊 Estoque</a>
+        <a href="/relatorios/vendas" class="menu-item active">📈 Vendas</a>
+        <a href="/relatorios/pendencias" class="menu-item">📖 Pendências</a>
+        
+        
+    
+    </div>
+
+    <!-- Conteúdo Principal -->
+    <div class="main-content">
+        <div class="topo-filtros">
+            <div>
+                <h1>Relatório de Vendas</h1>
+                <p class="subtitulo-tela" style="margin-bottom: 0;">Acompanhe o faturamento e o histórico de pedidos da loja.</p>
+            </div>
+            
+            <div class="filtro-datas">
+                <div>
+                    <label for="data-inicio">Data Inicial:</label>
+                    <input type="date" id="data-inicio">
+                </div>
+                <div>
+                    <label for="data-fim">Data Final:</label>
+                    <input type="date" id="data-fim">
+                </div>
+                <button class="btn-pimenta" style="padding: 10px 20px; border-radius: 12px;" onclick="filtrarVendas()">🔍 Filtrar</button>
+                <button class="btn-pimenta" style="background-color: #27ae60; padding: 10px 20px; border-radius: 12px;" onclick="gerarPDFVendas()">📄 Exportar PDF</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Histórico de Vendas por Período</h2>
+            <p style="color: var(--texto-mutado); font-size: 14px; margin-bottom: 20px;">Lista de mercadorias saídas e formas de pagamento utilizadas.</p>
+            
+            <table class="tabela-clientes" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>ID Venda</th>
+                        <th>Data / Hora</th>
+                        <th>Cliente</th>
+                        <th>Forma Pagamento</th>
+                        <th>Valor Total</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-vendas">
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: #777;">Nenhuma venda encontrada para o período.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function configurarDatasPadrao() {
+            const hoje = new Date();
+            const ano = hoje.getFullYear();
+            const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+            const dia = String(hoje.getDate()).padStart(2, '0');
+            
+            document.getElementById('data-inicio').value = `${ano}-${mes}-01`;
+            document.getElementById('data-fim').value = `${ano}-${mes}-${dia}`;
+        }
+
+        async function filtrarVendas() {
+            const inicio = document.getElementById('data-inicio').value;
+            const fim = document.getElementById('data-fim').value;
+            const tabela = document.getElementById('tabela-vendas');
+
+            if (!inicio || !fim) return;
+
+            try {
+                const res = await fetch(`/api/vendas/dados?inicio=${inicio}&fim=${fim}`);
+                const vendas = await res.json();
+
+                tabela.innerHTML = ''; 
+
+                if (vendas.length > 0) {
+                    vendas.forEach(v => {
+                        let dataFormatada = v.data_venda;
+
+                        if (v.data_venda && v.data_venda.includes(' ')) {
+                            const partes = v.data_venda.split(' ');
+                            const dataPartes = partes[0].split('-');
+                            const horaPartes = partes[1].split(':');
+                            let horaReal = parseInt(horaPartes[0]) - 4;
+                            let diaReal = parseInt(dataPartes[2]);
+                            
+                            if (horaReal < 0) {
+                                horaReal = 24 + horaReal;
+                                diaReal = diaReal - 1;
+                            }
+
+                            const diaStr = String(diaReal).padStart(2, '0');
+                            const horaStr = String(horaReal).padStart(2, '0');
+
+                            dataFormatada = `${diaStr}/${dataPartes[1]}/${dataPartes[0]} ${horaStr}:${horaPartes[1]}:${horaPartes[2]}`;
+                        } else if (v.data_venda && v.data_venda.includes('-')) {
+                            const dataPartes = v.data_venda.split('-');
+                            dataFormatada = `${dataPartes[2]}/${dataPartes[1]}/${dataPartes[0]}`;
+                        }
+
+                        const nomeCliente = v.cliente_nome ? `<strong>${v.cliente_nome}</strong>` : '<span style="color: #999;">Consumidor Final</span>';
+                        
+                        tabela.innerHTML += `
+                            <tr>
+                                <td>#${v.id}</td>
+                                <td>${dataFormatada}</td>
+                                <td>${nomeCliente}</td>
+                                <td>${v.tipo_pagamento}</td>
+                                <td style="color: #2ecc71; font-weight: bold;">R$ ${v.total.toFixed(2)}</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    tabela.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #777;">Nenhuma venda realizada neste período.</td></tr>`;
+                }
+            } catch(e) { 
+                console.error("Erro ao carregar vendas:", e); 
+                tabela.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #c0392b;">Erro ao buscar dados.</td></tr>`;
+            }
+        }
+
+        function gerarPDFVendas() {
+            const lines = document.querySelectorAll("#tabela-vendas tr");
+            const dadosVendas = [];
+            
+            lines.forEach(linha => {
+                const colunas = linha.querySelectorAll("td");
+                if (colunas.length >= 5) {
+                    dadosVendas.push({
+                        id: colunas[0].innerText,
+                        data: colunas[1].innerText,
+                        cliente: colunas[2].innerText,
+                        pagamento: colunas[3].innerText,
+                        total: colunas[4].innerText
+                    });
+                }
+            });
+
+            if (dadosVendas.length === 0) {
+                alert("Nenhuma venda carregada na tabela para exportar!");
+                return;
+            }
+
+            // Envia de forma segura para o servidor Node imprimir
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/api/relatorios/vendas/pdf';
+            form.target = '_blank';
+
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'vendas';
+            input.value = JSON.stringify(dadosVendas);
+            
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+        }
+
+        window.onload = () => {
+            configurarDatasPadrao();
+            filtrarVendas();
+        };
+    </script>
+</body>
+</html>                      

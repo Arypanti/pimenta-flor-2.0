@@ -1,0 +1,4088 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pimenta Flor - Relatório de Pendências</title>
+    
+    <link rel="stylesheet" href="/style.css">
+    <style>
+       /* =========================================================
+   RESUMO DE PENDÊNCIAS
+   ========================================================= */
+
+.resumo-pendencias {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    width: 100%;
+    margin: 0 0 28px 0;
+}
+
+
+.card-resumo {
+    background: var(--pf-surface);
+    border: 1px solid var(--pf-border);
+    border-radius: var(--pf-radius);
+    padding: 20px 22px;
+    min-height: 110px;
+    box-shadow: var(--pf-shadow);
+}
+
+
+.card-resumo:first-child {
+    border-left: 4px solid #c0392b;
+}
+
+
+.card-resumo h3 {
+    margin: 0 0 10px;
+    color: var(--pf-text-strong);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+
+.card-resumo .valor {
+    margin: 0;
+    font-size: 27px;
+    font-weight: 800;
+    color: var(--pf-text-strong);
+}
+
+
+/* =========================================================
+   BOTÃO CADASTRAR PENDÊNCIA
+   ========================================================= */
+
+.acoes-pendencias {
+    display: flex;
+    align-items: center;
+    margin: 0 0 24px 0;
+}
+
+
+.btn-cadastrar-pendencia-existente {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 10px 16px;
+    border: 0;
+    border-radius: 11px;
+    background: #20b45b;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+
+.btn-cadastrar-pendencia-existente:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(32, 180, 91, .20);
+}
+
+
+/* =========================================================
+   OUTROS BOTÕES DE AÇÃO
+   ========================================================= */
+
+.acoes-pendencia {
+    display: flex;
+    align-items: center;
+    margin: 4px 0 28px;
+}
+
+
+.btn-acao-quitar,
+.btn-acao-parcial {
+    border: 0;
+    padding: 9px 11px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 11px;
+    cursor: pointer;
+    transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+
+/* =========================================================
+   OUTROS ELEMENTOS DA TABELA
+   ========================================================= */
+
+.ref-itens {
+    color: var(--vinho-suave);
+    font-weight: 700;
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+
+.valor-pago {
+    color: var(--verde);
+    font-weight: 700;
+    font-size: 12px;
+}
+        .btn-acao-quitar {
+            background: var(--verde-suave);
+            color: var(--verde);
+        }
+
+        .btn-cadastrar-pendencia-existente {
+           margin-top: 12px;
+           border: 0;
+           padding: 10px 14px;
+           border-radius: 10px;
+           background: #27ae60;
+           color: #ffffff;
+           font-size: 11px;
+           font-weight: 800;
+           cursor: pointer;
+           transition: transform 180ms ease, box-shadow 180ms ease;
+        }
+
+.btn-cadastrar-pendencia-existente:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--sombra-card);
+}
+        .btn-acao-parcial {
+            background: var(--amarelo-suave);
+            color: var(--amarelo);
+        }
+        .btn-acao-quitar:hover, .btn-acao-parcial:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--sombra-card);
+        }
+        @media (max-width: 800px) {
+            .resumo-pendencias {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .status-aberto,
+        .status-parcial {
+            display: inline-flex;
+            padding: 6px 9px;
+            border-radius: 9px;
+            font-size: 10px;
+            font-weight: 800;
+        }
+
+        .status-aberto {
+            background: var(--vermelho-suave);
+            color: var(--vermelho-alerta);
+        }
+
+        .status-parcial {
+            background: var(--amarelo-suave);
+            color: var(--amarelo);
+        }
+
+        .texto-mutado {
+            color: var(--texto-mutado);
+            font-size: 11px;
+        }
+
+        @media (max-width: 900px) {
+            .resumo-pendencias {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* =========================================================
+           MODAL DE PAGAMENTO PARCIAL
+           ========================================================= */
+
+        .modal-pagamento {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-pagamento.ativa {
+            display: flex;
+        }
+
+        .modal-pagamento-conteudo {
+            width: min(560px, 100%);
+            max-height: 90vh;
+            overflow-y: auto;
+            background: #ffffff;
+            border-radius: 18px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.20);
+            padding: 26px;
+            animation: aparecerModal 180ms ease;
+        }
+
+        @keyframes aparecerModal {
+            from {
+                opacity: 0;
+                transform: translateY(12px) scale(0.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-pagamento-cabecalho {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .modal-pagamento-cabecalho h2 {
+            margin: 0;
+            color: #333;
+            font-size: 21px;
+        }
+
+        .modal-pagamento-subtitulo {
+            margin: 5px 0 0;
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+
+        .btn-fechar-modal {
+            border: 0;
+            background: #f5f5f5;
+            color: #777;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .btn-fechar-modal:hover {
+            background: #eeeeee;
+        }
+
+        .modal-resumo-pagamento {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .modal-resumo-box {
+            background: #fafafa;
+            border: 1px solid #eeeeee;
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .modal-resumo-box small {
+            display: block;
+            color: #888;
+            font-size: 10px;
+            text-transform: uppercase;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+
+        .modal-resumo-box strong {
+            color: #333;
+            font-size: 17px;
+        }
+
+        .modal-lista-parcelas {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 22px;
+        }
+
+        .modal-parcela {
+            padding: 12px;
+            border-radius: 11px;
+            border-left: 4px solid #f39c12;
+            background: #fafafa;
+        }
+
+        .modal-parcela.quitada {
+            border-left-color: #27ae60;
+        }
+
+        .modal-parcela.parcial {
+            border-left-color: #2980b9;
+        }
+
+        .modal-parcela-topo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-parcela-topo strong {
+            color: #333;
+            font-size: 13px;
+        }
+
+        .modal-parcela-valor {
+            font-weight: 800;
+            color: #333;
+            font-size: 13px;
+        }
+
+        .modal-parcela-info {
+            margin-top: 5px;
+            color: #777;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .modal-pagamento-campo {
+            margin-top: 10px;
+        }
+
+        .modal-pagamento-campo label {
+            display: block;
+            margin-bottom: 7px;
+            color: #444;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .modal-pagamento-input {
+            width: 100%;
+            box-sizing: border-box;
+            border: 2px solid #eeeeee;
+            border-radius: 11px;
+            padding: 13px 14px;
+            font-size: 18px;
+            font-weight: 700;
+            outline: none;
+            transition: border-color 180ms ease, box-shadow 180ms ease;
+        }
+
+        .modal-pagamento-input:focus {
+            border-color: #c0392b;
+            box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.10);
+        }
+
+        .modal-pagamento-acoes {
+            display: flex;
+            justify-content: flex-end;
+            gap: 9px;
+            margin-top: 22px;
+        }
+
+        .btn-modal-cancelar,
+        .btn-modal-confirmar {
+            border: 0;
+            border-radius: 10px;
+            padding: 11px 17px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .btn-modal-cancelar {
+            background: #f1f1f1;
+            color: #666;
+        }
+
+        .btn-modal-confirmar {
+            background: #27ae60;
+            color: #fff;
+        }
+
+        .btn-modal-confirmar:hover {
+            filter: brightness(0.95);
+        }
+
+        /* =========================================================
+           PRÉVIA DA DISTRIBUIÇÃO DO PAGAMENTO
+           ========================================================= */
+
+        .modal-previa-pagamento {
+            margin-top: 14px;
+            margin-bottom: 18px;
+            padding: 14px;
+            background: #fafafa;
+            border: 1px solid #eeeeee;
+            border-radius: 12px;
+        }
+
+        .modal-previa-titulo {
+            color: #444;
+            font-size: 12px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .modal-previa-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 9px 10px;
+            margin-top: 7px;
+            background: #ffffff;
+            border-radius: 9px;
+            border-left: 4px solid #f39c12;
+        }
+
+        .modal-previa-item.quitada {
+            border-left-color: #27ae60;
+        }
+
+        .modal-previa-item.parcial {
+            border-left-color: #2980b9;
+        }
+
+        .modal-previa-item-info {
+            font-size: 11px;
+            line-height: 1.5;
+            color: #555;
+        }
+
+        .modal-previa-item-info strong {
+            color: #333;
+        }
+
+        .modal-previa-item-valor {
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+            color: #333;
+        }
+
+        .modal-previa-vazia {
+            color: #888;
+            font-size: 11px;
+            padding: 5px 0;
+        }
+
+        @media (max-width: 600px) {
+            .modal-pagamento {
+                padding: 10px;
+            }
+
+            .modal-pagamento-conteudo {
+                padding: 20px;
+            }
+
+            .modal-resumo-pagamento {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-pagamento-acoes {
+                flex-direction: column-reverse;
+            }
+
+            .btn-modal-cancelar,
+            .btn-modal-confirmar {
+                width: 100%;
+            }
+        }
+        /* =========================================================
+   MODAL - CADASTRAR PENDÊNCIA EXISTENTE
+   ========================================================= */
+
+.modal-pendencia-existente {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal-pendencia-existente.ativa {
+    display: flex;
+}
+
+.modal-pendencia-existente-conteudo {
+    width: min(560px, 100%);
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.20);
+    padding: 26px;
+    animation: aparecerModalPendencia 180ms ease;
+}
+
+@keyframes aparecerModalPendencia {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+
+/* CABEÇALHO */
+
+.modal-pendencia-existente-cabecalho {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.modal-pendencia-existente-cabecalho h2 {
+    margin: 0;
+    color: #333;
+    font-size: 21px;
+}
+
+.modal-pendencia-existente-cabecalho p {
+    margin: 5px 0 0;
+    color: #7f8c8d;
+    font-size: 12px;
+}
+
+
+/* AVISO */
+
+.aviso-pendencia-existente {
+    margin-bottom: 20px;
+    padding: 12px 14px;
+    background: #f4fbf6;
+    border: 1px solid #d8efdf;
+    border-radius: 11px;
+    color: #3d6b49;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.aviso-pendencia-existente strong {
+    color: #27ae60;
+}
+
+
+/* CAMPOS */
+
+.campo-pendencia-existente {
+    margin-bottom: 16px;
+}
+
+.campo-pendencia-existente label {
+    display: block;
+    margin-bottom: 7px;
+    color: #444;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.input-pendencia-existente {
+    width: 100%;
+    box-sizing: border-box;
+    border: 2px solid #eeeeee;
+    border-radius: 11px;
+    padding: 12px 13px;
+    background: #ffffff;
+    color: #333;
+    font-size: 13px;
+    outline: none;
+    transition:
+        border-color 180ms ease,
+        box-shadow 180ms ease;
+}
+
+.input-pendencia-existente:focus {
+    border-color: #c0392b;
+    box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.10);
+}
+
+
+/* ÁREA DAS PARCELAS */
+
+.parcelas-existentes-area {
+    margin-top: 8px;
+    padding: 14px;
+    background: #fafafa;
+    border: 1px solid #eeeeee;
+    border-radius: 12px;
+}
+
+.parcelas-existentes-titulo {
+    margin-bottom: 10px;
+    color: #444;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.lista-parcelas-existente {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.parcela-existente-item {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 10px;
+    align-items: center;
+    padding: 10px;
+    background: #ffffff;
+    border-radius: 9px;
+    border-left: 4px solid #f39c12;
+}
+
+.parcela-existente-item strong {
+    color: #333;
+    font-size: 11px;
+}
+
+.parcela-existente-item input {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #eeeeee;
+    border-radius: 8px;
+    padding: 9px 10px;
+    font-size: 12px;
+    outline: none;
+}
+
+.parcela-existente-item input:focus {
+    border-color: #c0392b;
+}
+
+
+/* AÇÕES */
+
+.modal-pendencia-existente-acoes {
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+    margin-top: 22px;
+}
+
+.btn-cancelar-pendencia-existente,
+.btn-salvar-pendencia-existente {
+    border: 0;
+    border-radius: 10px;
+    padding: 11px 17px;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.btn-cancelar-pendencia-existente {
+    background: #f1f1f1;
+    color: #666;
+}
+
+.btn-salvar-pendencia-existente {
+    background: #27ae60;
+    color: #ffffff;
+}
+
+.btn-salvar-pendencia-existente:hover {
+    filter: brightness(0.95);
+}
+
+
+/* RESPONSIVO */
+
+@media (max-width: 600px) {
+
+    .modal-pendencia-existente {
+        padding: 10px;
+    }
+
+    .modal-pendencia-existente-conteudo {
+        padding: 20px;
+    }
+
+    .parcela-existente-item {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-pendencia-existente-acoes {
+        flex-direction: column-reverse;
+    }
+
+    .btn-cancelar-pendencia-existente,
+    .btn-salvar-pendencia-existente {
+        width: 100%;
+    }
+
+}
+    </style>
+</head>
+
+<body>
+        <!-- Menu Lateral Sofisticado Sem Fornecedores -->
+    <div class="sidebar">
+
+        <div class="logo-container">
+            <div class="logo-circulo">P</div>
+
+            <div class="logo-texto">
+                <span class="logo-loja">Pimenta Flor</span>
+                <span class="logo-sub">Gestão da Loja</span>
+            </div>
+        </div>
+
+        <hr style="
+            border: 0;
+            border-top: 1px solid var(--borda-suave);
+            margin-bottom: 20px;
+        ">
+
+        <a href="/" class="menu-item">📋 Início</a>
+        <a href="/clientes" class="menu-item">👥 Clientes</a>
+        <a href="/produtos" class="menu-item">📦 Produtos</a>
+        <a href="/vendas" class="menu-item">🛒 Vendas</a>
+        <a href="/pendencias" class="menu-item">📖 Pendências</a>
+
+        <div class="menu-secao">Relatórios</div>
+
+        <a href="/relatorios/estoque" class="menu-item">📊 Estoque</a>
+        <a href="/vendas/historico" class="menu-item">📈 Vendas</a>
+        <a href="/relatorios/pendencias" class="menu-item active">📖 Pendências</a>
+
+    </div>
+
+
+    "filtro-datas">
+
+                <button
+                    class="btn-pimenta"
+                    style="
+                        background-color: #27ae60;
+                        padding: 10px 20px;
+                        border-radius: 12px;
+                    "
+                    onclick="gerarPDFPendencias()"
+                >
+                    📄 Exportar PDF
+                </button>
+
+            </div>
+
+        </div>
+
+        <!-- CONTEÚDO PRINCIPAL -->
+
+<div class="main-content">
+
+    <!-- CABEÇALHO -->
+    <div class="topo-filtros">
+
+        <div>
+            <h1>Pendências</h1>
+
+            <p
+                class="subtitulo-tela"
+                style="margin-bottom: 0;"
+            >
+                Controle de crédito, itens levados e valores a receber.
+            </p>
+        </div>
+
+    </div>
+
+
+    <!-- RESUMO -->
+    <div class="resumo-pendencias">
+
+        <div
+            class="card-resumo"
+            style="border-left: 4px solid #c0392b;"
+        >
+
+            <h3>Total em Aberto 💰</h3>
+
+            <p
+                class="valor"
+                id="total-aberto"
+            >
+                R$ 0,00
+            </p>
+
+        </div>
+
+
+        <div class="card-resumo">
+
+            <h3>Clientes Inadimplentes 👥</h3>
+
+            <p
+                class="valor"
+                id="total-clientes-pendentes"
+                style="color: #333;"
+            >
+                0
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- AÇÃO -->
+    <div class="acoes-pendencias">
+
+        <button
+            type="button"
+            class="btn-cadastrar-pendencia-existente"
+            onclick="abrirModalPendenciaExistente()"
+        >
+            📋 Cadastrar pendência existente
+        </button>
+
+    </div>
+
+
+    <!-- TABELA -->
+    <div class="card">
+
+        <h2>Detalhamento por Cliente</h2>
+
+        <p
+            style="
+                color: var(--texto-mutado);
+                font-size: 14px;
+                margin-bottom: 20px;
+            "
+        >
+            Lista de clientes com saldos pendentes ou parciais ativos.
+        </p>
+
+
+        <table
+            class="tabela-clientes"
+            style="width: 100%;"
+        >
+
+            <thead>
+
+                <tr>
+                    <th>Cliente</th>
+                    <th>O que levou</th>
+                    <th>Data da Compra</th>
+                    <th>Valor Original</th>
+                    <th>Pago</th>
+                    <th>Restante</th>
+                    <th>Situação</th>
+                    <th>Ações</th>
+                </tr>
+
+            </thead>
+
+
+            <tbody id="tabela-pendencias">
+
+                <tr>
+
+                    <td
+                        colspan="8"
+                        style="
+                            text-align: center;
+                            color: #777;
+                        "
+                    >
+                        Carregando dados...
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<!-- =========================================================
+         MODAL ÚNICA DE PAGAMENTO PARCIAL
+         ========================================================= -->
+
+    <div
+        id="modal-pagamento"
+        class="modal-pagamento"
+    >
+
+        <div class="modal-pagamento-conteudo">
+
+
+            <!-- CABEÇALHO -->
+            <div class="modal-pagamento-cabecalho">
+
+                <div>
+
+                    <h2>
+                        💰 Registrar pagamento
+                    </h2>
+
+                    <p
+                        class="modal-pagamento-subtitulo"
+                        id="modal-cliente-nome"
+                    >
+                        Cliente
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="btn-fechar-modal"
+                    onclick="fecharModalPagamento()"
+                    aria-label="Fechar"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <!-- RESUMO -->
+            <div class="modal-resumo-pagamento">
+
+
+                <div class="modal-resumo-box">
+
+                    <small>
+                        Saldo atual
+                    </small>
+
+                    <strong id="modal-saldo-atual">
+                        R$ 0,00
+                    </strong>
+
+                </div>
+
+
+                <div class="modal-resumo-box">
+
+                    <small>
+                        Total original
+                    </small>
+
+                    <strong id="modal-valor-original">
+                        R$ 0,00
+                    </strong>
+
+                </div>
+
+
+                <div class="modal-resumo-box">
+
+                    <small>
+                        Após pagamento
+                    </small>
+
+                    <strong id="modal-saldo-final">
+                        R$ 0,00
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- PARCELAS -->
+            <div>
+
+                <h3
+                    style="
+                        margin: 0 0 10px;
+                        font-size: 13px;
+                        color: #444;
+                    "
+                >
+                    💳 Parcelas
+                </h3>
+
+
+                <div
+                    id="modal-lista-parcelas"
+                    class="modal-lista-parcelas"
+                >
+                </div>
+
+            </div>
+
+
+            <!-- PRÉVIA DA DISTRIBUIÇÃO -->
+            <div
+                id="modal-previa-pagamento"
+                class="modal-previa-pagamento"
+                style="display: none;"
+            >
+
+                <div class="modal-previa-titulo">
+                    💳 Como o pagamento será distribuído
+                </div>
+
+                <div id="modal-previa-parcelas">
+                </div>
+
+            </div>
+
+
+            <!-- VALOR RECEBIDO -->
+            <div class="modal-pagamento-campo">
+
+                <label for="modal-valor-pagamento">
+                    Valor recebido
+                </label>
+
+                <input
+                    id="modal-valor-pagamento"
+                    class="modal-pagamento-input"
+                    type="text"
+                    inputmode="decimal"
+                    placeholder="R$ 0,00"
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <!-- AÇÕES -->
+            <div class="modal-pagamento-acoes">
+
+
+                <button
+                    type="button"
+                    class="btn-modal-cancelar"
+                    onclick="fecharModalPagamento()"
+                >
+                    Cancelar
+                </button>
+
+
+                <button
+                    type="button"
+                    class="btn-modal-confirmar"
+                    onclick="confirmarPagamentoParcial()"
+                >
+                    ✓ Continuar
+                </button>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+    <!-- =========================================================
+     MODAL — CADASTRAR PENDÊNCIA EXISTENTE
+     ========================================================= -->
+
+<div
+    id="modal-pendencia-existente"
+    class="modal-pendencia-existente"
+>
+
+    <div class="modal-pendencia-existente-conteudo">
+
+        <!-- CABEÇALHO -->
+
+        <div class="modal-pendencia-existente-cabecalho">
+
+            <div>
+
+                <h2>
+                    📋 Cadastrar pendência existente
+                </h2>
+
+                <p>
+                    Registre uma dívida anterior ao uso do sistema.
+                </p>
+
+            </div>
+
+            <button
+                type="button"
+                class="btn-fechar-modal"
+                onclick="fecharModalPendenciaExistente()"
+                aria-label="Fechar"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <!-- AVISO -->
+
+        <div class="aviso-pendencia-existente">
+
+            📦 Esta pendência será cadastrada apenas como
+            histórico financeiro e <strong>não alterará o estoque</strong>.
+
+        </div>
+
+
+        <!-- CLIENTE -->
+
+        <div class="campo-pendencia-existente">
+
+            <label for="pendencia-existente-cliente">
+                Cliente
+            </label>
+
+            <select
+                id="pendencia-existente-cliente"
+                class="input-pendencia-existente"
+            >
+
+                <option value="">
+                    Selecione o cliente
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <!-- DATA DA COMPRA -->
+
+        <div class="campo-pendencia-existente">
+
+            <label for="pendencia-existente-data-compra">
+                Data da compra
+            </label>
+
+            <input
+                id="pendencia-existente-data-compra"
+                class="input-pendencia-existente"
+                type="date"
+            >
+
+        </div>
+
+
+        <!-- VALOR TOTAL -->
+
+        <div class="campo-pendencia-existente">
+
+            <label for="pendencia-existente-valor">
+                Valor total da pendência
+            </label>
+
+            <input
+                id="pendencia-existente-valor"
+                class="input-pendencia-existente"
+                type="text"
+                inputmode="decimal"
+                placeholder="R$ 0,00"
+                autocomplete="off"
+            >
+
+        </div>
+
+
+        <!-- NÚMERO DE PARCELAS -->
+
+        <div class="campo-pendencia-existente">
+
+            <label for="pendencia-existente-parcelas">
+                Número de parcelas
+            </label>
+
+            <select
+                id="pendencia-existente-parcelas"
+                class="input-pendencia-existente"
+            >
+
+                <option value="1">
+                    1 parcela
+                </option>
+
+                <option value="2">
+                    2 parcelas
+                </option>
+
+                <option value="3">
+                    3 parcelas
+                </option>
+
+                <option value="4">
+                    4 parcelas
+                </option>
+
+                <option value="5">
+                    5 parcelas
+                </option>
+
+                <option value="6">
+                    6 parcelas
+                </option>
+
+                <option value="7">
+                    7 parcelas
+                </option>
+
+                <option value="8">
+                    8 parcelas
+                </option>
+
+                <option value="9">
+                    9 parcelas
+                </option>
+
+                <option value="10">
+                    10 parcelas
+                </option>
+
+                <option value="11">
+                    11 parcelas
+                </option>
+
+                <option value="12">
+                    12 parcelas
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <!-- PARCELAS -->
+
+        <div class="parcelas-existentes-area">
+
+            <div class="parcelas-existentes-titulo">
+                💳 Vencimentos das parcelas
+            </div>
+
+            <div
+                id="lista-parcelas-existente"
+                class="lista-parcelas-existente"
+            >
+            </div>
+
+        </div>
+
+
+        <!-- AÇÕES -->
+
+        <div class="modal-pendencia-existente-acoes">
+
+            <button
+                type="button"
+                class="btn-cancelar-pendencia-existente"
+                onclick="fecharModalPendenciaExistente()"
+            >
+                Cancelar
+            </button>
+
+            <button
+                type="button"
+                class="btn-salvar-pendencia-existente"
+                onclick="salvarPendenciaExistente()"
+            >
+                💾 Cadastrar pendência
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+
+    <script>
+
+        function formatarMoeda(valor) {
+
+            return Number(valor || 0).toLocaleString(
+                'pt-BR',
+                {
+                    style: 'currency',
+                    currency: 'BRL'
+                }
+            );
+
+        }
+                function calcularPrazo(dataOriginal) {
+
+            if (!dataOriginal) {
+                return `
+                    <span class="texto-mutado">
+                        Prazo não informado
+                    </span>
+                `;
+            }
+
+            const dataBase = new Date(
+                String(dataOriginal).replace(' ', 'T')
+            );
+
+            if (Number.isNaN(dataBase.getTime())) {
+                return `
+                    <span class="texto-mutado">
+                        Prazo não informado
+                    </span>
+                `;
+            }
+
+            dataBase.setDate(
+                dataBase.getDate() + 30
+            );
+
+            const hoje = new Date();
+
+            hoje.setHours(0, 0, 0, 0);
+            dataBase.setHours(0, 0, 0, 0);
+
+            const dias = Math.floor(
+                (hoje - dataBase) / 86400000
+            );
+
+            if (dias > 0) {
+
+                return `
+                    <span
+                        style="
+                            color: var(--vermelho-alerta);
+                            font-size: 11px;
+                            font-weight: 800;
+                        "
+                    >
+                        ⚠️ Atrasado há ${dias} dia(s)
+                    </span>
+                `;
+            }
+
+            return `
+                <span
+                    style="
+                        color: var(--verde);
+                        font-size: 11px;
+                        font-weight: 700;
+                    "
+                >
+                    ⏱️ Vence em
+                    ${dataBase.toLocaleDateString('pt-BR')}
+                </span>
+            `;
+        }
+
+
+        // =========================================================
+        // CARREGAR PENDÊNCIAS
+        // =========================================================
+
+        async function carregarPendencias() {
+
+            const tabela =
+                document.getElementById('tabela-pendencias');
+
+            const elemTotal =
+                document.getElementById('total-aberto');
+
+            const elemQtd =
+                document.getElementById(
+                    'total-clientes-pendentes'
+                );
+
+
+            try {
+
+                const resposta = await fetch(
+                    '/api/pendencias/dados'
+                );
+
+
+                if (!resposta.ok) {
+                    throw new Error(
+                        'Falha ao carregar pendências.'
+                    );
+                }
+
+
+                const dados =
+                    await resposta.json();
+
+
+                tabela.innerHTML = '';
+
+
+                let somaValor = 0;
+
+                const clientesContados =
+                    new Set();
+
+
+                // -------------------------------------------------
+                // NENHUMA PENDÊNCIA
+                // -------------------------------------------------
+
+                if (!Array.isArray(dados) || dados.length === 0) {
+
+                    tabela.innerHTML = `
+                        <tr>
+                            <td
+                                colspan="8"
+                                style="
+                                    text-align: center;
+                                    color: var(--texto-mutado);
+                                    padding: 30px;
+                                "
+                            >
+                                Nenhuma pendência ativa encontrada.
+                            </td>
+                        </tr>
+                    `;
+
+                    elemTotal.innerText =
+                        formatarMoeda(0);
+
+                    elemQtd.innerText = '0';
+
+                    return;
+                }
+
+
+                // -------------------------------------------------
+                // MONTAR CADA PENDÊNCIA
+                // -------------------------------------------------
+
+                dados.forEach(p => {
+
+                    const original =
+                        Number(p.valor_original || 0);
+
+                    const restante =
+                        Number(p.valor_restante || 0);
+
+                    const pago =
+                        Number(p.valor_pago || 0);
+
+
+                    somaValor += restante;
+
+
+                    if (
+                        restante > 0 &&
+                        p.cliente_id != null
+                    ) {
+                        clientesContados.add(
+                            p.cliente_id
+                        );
+                    }
+
+
+                    // -------------------------------------------------
+                    // PRODUTOS
+                    // -------------------------------------------------
+
+                    const itens =
+                        p.detalhe_produtos
+                            ? String(p.detalhe_produtos)
+                                .split(' • ')
+                                .map(
+                                    item => `• ${item}`
+                                )
+                                .join('<br>')
+                            : `Venda #${p.venda_id || '—'}`;
+
+
+                    // -------------------------------------------------
+                    // STATUS
+                    // -------------------------------------------------
+
+                    const statusClass =
+                        p.status === 'Aberto'
+                            ? 'status-aberto'
+                            : 'status-parcial';
+
+
+                    // -------------------------------------------------
+                    // PARCELAS
+                    // -------------------------------------------------
+
+                    let parcelas = [];
+
+
+                    try {
+
+                        if (p.parcelas) {
+
+                            parcelas =
+                                typeof p.parcelas === 'string'
+                                    ? JSON.parse(p.parcelas)
+                                    : p.parcelas;
+
+                        }
+
+                    } catch (erro) {
+
+                        console.error(
+                            'Erro ao interpretar parcelas:',
+                            erro
+                        );
+
+                        parcelas = [];
+                    }
+
+
+                    if (!Array.isArray(parcelas)) {
+                        parcelas = [];
+                    }
+
+
+                    // -------------------------------------------------
+                    // HTML DAS PARCELAS
+                    // -------------------------------------------------
+
+                    let textoParcelamento = '';
+
+
+                    if (parcelas.length > 0) {
+
+                        const linhasParcelas =
+                            parcelas.map(parcela => {
+
+                                const dataVencimento =
+                                    parcela.data_vencimento
+                                        ? String(
+                                            parcela.data_vencimento
+                                        )
+                                            .split('-')
+                                            .reverse()
+                                            .join('/')
+                                        : 'A combinar';
+
+
+                                const valor =
+                                    Number(
+                                        parcela.valor || 0
+                                    );
+
+
+                                const pagoParcela =
+                                    Number(
+                                        parcela.valor_pago || 0
+                                    );
+
+
+                                const restanteParcela =
+                                    Number(
+                                        parcela.valor_restante || 0
+                                    );
+
+
+                                let corStatus =
+                                    '#f39c12';
+
+                                let textoStatus =
+                                    'Aberta';
+
+
+                                if (
+                                    parcela.status ===
+                                    'Quitada'
+                                ) {
+
+                                    corStatus =
+                                        '#27ae60';
+
+                                    textoStatus =
+                                        'Quitada';
+
+                                } else if (
+                                    pagoParcela > 0
+                                ) {
+
+                                    corStatus =
+                                        '#2980b9';
+
+                                    textoStatus =
+                                        'Parcial';
+                                }
+
+
+                                return `
+                                    <div
+                                        style="
+                                            margin-top: 6px;
+                                            padding: 6px 8px;
+                                            background: #fafafa;
+                                            border-radius: 6px;
+                                            border-left:
+                                                3px solid
+                                                ${corStatus};
+                                            font-size: 11px;
+                                        "
+                                    >
+
+                                        <strong>
+                                            ${parcela.numero_parcela}ª
+                                            parcela
+                                        </strong>
+
+                                        —
+                                        ${formatarMoeda(valor)}
+
+                                        <br>
+
+
+                                        <span
+                                            style="
+                                                color: ${corStatus};
+                                                font-weight: 700;
+                                            "
+                                        >
+                                            ${textoStatus}
+                                        </span>
+
+
+                                        ${
+                                            pagoParcela > 0
+                                                ? `
+                                                    • Pago:
+                                                    ${formatarMoeda(
+                                                        pagoParcela
+                                                    )}
+                                                `
+                                                : ''
+                                        }
+
+
+                                        ${
+                                            restanteParcela > 0
+                                                ? `
+                                                    • Restante:
+                                                    ${formatarMoeda(
+                                                        restanteParcela
+                                                    )}
+                                                `
+                                                : ''
+                                        }
+
+
+                                        <br>
+
+
+                                        <span
+                                            style="
+                                                color: #7f8c8d;
+                                            "
+                                        >
+                                            📅 Vencimento:
+                                            ${dataVencimento}
+                                        </span>
+
+                                    </div>
+                                `;
+                            })
+                            .join('');
+
+
+                        textoParcelamento = `
+
+                            <div
+                                style="
+                                    margin-top: 5px;
+                                    padding: 6px;
+                                "
+                            >
+
+                                <div
+                                    style="
+                                        color: #4f9b70;
+                                        font-size: 11px;
+                                        font-weight: 800;
+                                        margin-bottom: 4px;
+                                    "
+                                >
+                                    💳
+                                    ${parcelas.length}
+                                    parcela(s)
+                                </div>
+
+                                ${linhasParcelas}
+
+                            </div>
+
+                        `;
+                    }
+
+
+                    // -------------------------------------------------
+                    // BOTÃO PAGAR PARCIAL
+                    // -------------------------------------------------
+
+                    const parcelasCodificadas =
+                        encodeURIComponent(
+                            JSON.stringify(parcelas)
+                        );
+
+
+                    // -------------------------------------------------
+                    // LINHA DA TABELA
+                    // -------------------------------------------------
+
+                    tabela.innerHTML += `
+
+                        <tr>
+
+                            <td>
+
+                                <strong>
+                                    ${p.cliente_nome || 'Cliente'}
+                                </strong>
+
+                                <br>
+
+                                <small
+                                    style="
+                                        color: var(--texto-mutado);
+                                    "
+                                >
+                                    ${
+                                        p.telefone ||
+                                        'Telefone não informado'
+                                    }
+                                </small>
+
+                            </td>
+
+
+                            <td>
+
+                                <span class="ref-itens">
+                                    ${itens}
+                                </span>
+
+                            </td>
+
+
+                            <td>
+
+                                ${
+                                    p.data_compra_br || '—'
+                                }
+
+                                <br>
+
+                                ${calcularPrazo(
+                                    p.data_original
+                                )}
+
+                            </td>
+
+
+                            <td>
+
+                                ${formatarMoeda(original)}
+
+                                ${textoParcelamento}
+
+                            </td>
+
+
+                            <td>
+
+                                <span class="valor-pago">
+                                    ${formatarMoeda(pago)}
+                                </span>
+
+                            </td>
+
+
+                            <td>
+
+                                <strong
+                                    style="
+                                        color:
+                                            var(--vermelho-alerta);
+                                    "
+                                >
+                                    ${formatarMoeda(restante)}
+                                </strong>
+
+                            </td>
+
+
+                            <td>
+
+                                <span
+                                    class="${statusClass}"
+                                >
+                                    ${p.status}
+                                </span>
+
+                            </td>
+
+
+                            <td>
+
+                                <div class="acoes-pendencia">
+
+                                    <button
+                                        type="button"
+                                        onclick="quitarTotal(${p.id})"
+                                        class="btn-acao-quitar"
+                                    >
+                                        ✓ Quitar
+                                    </button>
+
+
+                                    <button
+                                        type="button"
+                                        onclick="pagarParcial(
+                                            ${p.id},
+                                            ${restante},
+                                            ${original},
+                                            '${parcelasCodificadas}'
+                                        )"
+                                        class="btn-acao-parcial"
+                                    >
+                                        R$ Parcial
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onclick="enviarWhatsApp(
+                                          '${String(p.cliente_nome || 'Cliente').replace(/'/g, "\\'")}',
+                                          '${String(p.telefone || '').replace(/'/g, "\\'")}',
+                                           ${restante},
+                                          '${parcelasCodificadas}'
+                                         )"
+                                         class="btn-acao-whatsapp"
+                                        >
+                                         🟢 📱 WhatsApp
+                                     </button>
+
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    `;
+                });
+
+
+                // -------------------------------------------------
+                // ATUALIZAR RESUMO
+                // -------------------------------------------------
+
+                elemTotal.innerText =
+                    formatarMoeda(somaValor);
+
+                elemQtd.innerText =
+                    clientesContados.size;
+
+
+            } catch (erro) {
+
+                console.error(
+                    'Erro ao carregar pendências:',
+                    erro
+                );
+
+
+                tabela.innerHTML = `
+
+                    <tr>
+
+                        <td
+                            colspan="8"
+                            style="
+                                text-align: center;
+                                color:
+                                    var(--vermelho-alerta);
+                                padding: 30px;
+                            "
+                        >
+                            Erro ao carregar as pendências.
+
+                        </td>
+
+                    </tr>
+
+                `;
+            }
+        }
+                // =========================================================
+        // QUITAR PENDÊNCIA TOTALMENTE
+        // =========================================================
+
+        async function quitarTotal(id) {
+
+            if (
+                !confirm(
+                    'Deseja quitar totalmente esta pendência?'
+                )
+            ) {
+                return;
+            }
+
+
+            try {
+
+                const resposta = await fetch(
+                    `/api/pendencias/${id}/quitar`,
+                    {
+                        method: 'POST'
+                    }
+                );
+
+
+                const dados =
+                    await resposta.json();
+
+
+                if (!resposta.ok) {
+
+                    throw new Error(
+                        dados.erro ||
+                        'Erro ao quitar pendência.'
+                    );
+
+                }
+
+
+                await carregarPendencias();
+
+
+                alert(
+                    'Pendência quitada com sucesso!'
+                );
+
+
+            } catch (erro) {
+
+                console.error(
+                    'Erro ao quitar pendência:',
+                    erro
+                );
+
+
+                alert(
+                    erro.message ||
+                    'Não foi possível quitar a pendência.'
+                );
+            }
+        }
+
+// =========================================================
+// WHATSAPP - LEMBRETE DE COBRANÇA
+// =========================================================
+
+function enviarWhatsApp(nome, telefone, restante, parcelasJson) {
+
+    // -----------------------------------------------------
+    // VERIFICAR TELEFONE
+    // -----------------------------------------------------
+
+    if (!telefone || telefone === 'Telefone não informado') {
+
+        alert(
+            'Este cliente não possui um telefone cadastrado.'
+        );
+
+        return;
+    }
+
+    // -----------------------------------------------------
+    // PREPARAR TELEFONE
+    // -----------------------------------------------------
+
+    let numero = String(telefone)
+        .replace(/\D/g, '');
+
+    // Se tiver 10 ou 11 dígitos, acrescenta o código do Brasil
+    if (
+        numero.length === 10 ||
+        numero.length === 11
+    ) {
+        numero = '55' + numero;
+    }
+
+    // -----------------------------------------------------
+    // INTERPRETAR PARCELAS
+    // -----------------------------------------------------
+
+    let parcelas = [];
+
+    try {
+
+        parcelas = parcelasJson
+            ? JSON.parse(
+                decodeURIComponent(parcelasJson)
+            )
+            : [];
+
+    } catch (erro) {
+
+        console.error(
+            'Erro ao interpretar parcelas para o WhatsApp:',
+            erro
+        );
+
+        parcelas = [];
+    }
+
+    // -----------------------------------------------------
+    // ENCONTRAR A PRIMEIRA PARCELA EM ABERTO
+    // -----------------------------------------------------
+
+    const parcelaPendente = parcelas.find(parcela => {
+
+        const saldoParcela = Number(
+            parcela.valor_restante || 0
+        );
+
+        return saldoParcela > 0;
+
+    });
+
+    // -----------------------------------------------------
+    // PEGAR DATA DE VENCIMENTO
+    // -----------------------------------------------------
+
+    let vencimento = 'Não informado';
+
+    if (parcelaPendente?.data_vencimento) {
+
+        const data = String(
+            parcelaPendente.data_vencimento
+        ).split('T')[0];
+
+        const partes = data.split('-');
+
+        if (partes.length === 3) {
+
+            vencimento =
+                `${partes[2]}/${partes[1]}/${partes[0]}`;
+
+        } else {
+
+            vencimento = data;
+        }
+    }
+
+    // -----------------------------------------------------
+    // FORMATAR VALOR
+    // -----------------------------------------------------
+
+    const valorFormatado = Number(
+        restante || 0
+    ).toLocaleString(
+        'pt-BR',
+        {
+            style: 'currency',
+            currency: 'BRL'
+        }
+    );
+
+    // -----------------------------------------------------
+    // MONTAR MENSAGEM
+    // -----------------------------------------------------
+
+    const mensagem = `
+🌷 Olá, ${nome || 'Cliente'}! Tudo bem? 😊
+
+Aqui é da *Pimenta Flor* 💕
+
+Passando com carinho para lembrar que você possui um saldo de *${valorFormatado}* referente à sua compra.
+
+📅 *Data de vencimento: ${vencimento}*
+
+Quando realizar o pagamento, se optar pelo *Pix*, pedimos por gentileza que nos envie o *comprovante por aqui*, para que possamos identificar e registrar seu pagamento. 💳✨
+
+Se precisar de alguma informação ou tiver qualquer dúvida, estamos à disposição para ajudar. 💕
+
+Tenha um ótimo dia! 🌷
+
+*Pimenta Flor* 🌷
+`.trim();
+
+    // -----------------------------------------------------
+    // ABRIR WHATSAPP
+    // -----------------------------------------------------
+
+    const url =
+    
+    `https://web.whatsapp.com/send?phone=${numero}&text=${encodeURIComponent(mensagem)}`;
+
+window.open(
+    url,
+    '_blank'
+);
+
+    window.open(
+        url,
+        '_blank'
+    );
+}
+        // =========================================================
+        // ABRIR MODAL DE PAGAMENTO PARCIAL
+        // =========================================================
+
+        async function pagarParcial(
+            id,
+            restante,
+            original,
+            parcelasJson
+        ) {
+
+            let parcelas = [];
+
+
+            // -----------------------------------------------------
+            // INTERPRETAR PARCELAS
+            // -----------------------------------------------------
+
+            try {
+
+                parcelas = parcelasJson
+                    ? JSON.parse(
+                        decodeURIComponent(
+                            parcelasJson
+                        )
+                    )
+                    : [];
+
+
+            } catch (erro) {
+
+                console.error(
+                    'Erro ao interpretar parcelas:',
+                    erro
+                );
+
+                parcelas = [];
+            }
+
+
+            if (!Array.isArray(parcelas)) {
+                parcelas = [];
+            }
+
+
+            // -----------------------------------------------------
+            // GUARDAR PENDÊNCIA ATUAL
+            // -----------------------------------------------------
+
+            window.pendenciaPagamentoAtual = {
+
+                id: Number(id),
+
+                restante: Number(restante),
+
+                original: Number(original),
+
+                parcelas: parcelas
+
+            };
+
+
+            // -----------------------------------------------------
+            // ATUALIZAR RESUMO DA MODAL
+            // -----------------------------------------------------
+
+            const saldoAtual =
+                document.getElementById(
+                    'modal-saldo-atual'
+                );
+
+
+            const valorOriginal =
+                document.getElementById(
+                    'modal-valor-original'
+                );
+
+
+            const saldoFinal =
+                document.getElementById(
+                    'modal-saldo-final'
+                );
+
+
+            if (saldoAtual) {
+
+                saldoAtual.innerText =
+                    formatarMoeda(restante);
+
+            }
+
+
+            if (valorOriginal) {
+
+                valorOriginal.innerText =
+                    formatarMoeda(original);
+
+            }
+
+
+            if (saldoFinal) {
+
+                saldoFinal.innerText =
+                    formatarMoeda(restante);
+
+            }
+
+
+            // -----------------------------------------------------
+            // CAMPO DE PAGAMENTO
+            // -----------------------------------------------------
+
+            const campoValor =
+                document.getElementById(
+                    'modal-valor-pagamento'
+                );
+
+
+            if (campoValor) {
+
+                campoValor.value = '';
+
+            }
+
+
+            // -----------------------------------------------------
+            // LISTA DE PARCELAS
+            // -----------------------------------------------------
+
+            const listaParcelas =
+                document.getElementById(
+                    'modal-lista-parcelas'
+                );
+
+
+            if (!listaParcelas) {
+
+                alert(
+                    'Não foi possível carregar a lista de parcelas.'
+                );
+
+                return;
+            }
+
+
+            listaParcelas.innerHTML = '';
+
+
+            if (parcelas.length === 0) {
+
+                listaParcelas.innerHTML = `
+
+                    <div class="modal-parcela">
+
+                        <div class="modal-parcela-info">
+
+                            Nenhuma parcela detalhada
+                            encontrada.
+
+                        </div>
+
+                    </div>
+
+                `;
+
+
+            } else {
+
+
+                parcelas.forEach(
+                    parcela => {
+
+                        const valor =
+                            Number(
+                                parcela.valor || 0
+                            );
+
+
+                        const valorPago =
+                            Number(
+                                parcela.valor_pago || 0
+                            );
+
+
+                        const valorRestante =
+                            Number(
+                                parcela.valor_restante || 0
+                            );
+
+
+                        const dataVencimento =
+                            parcela.data_vencimento
+                                ? String(
+                                    parcela.data_vencimento
+                                )
+                                    .split('-')
+                                    .reverse()
+                                    .join('/')
+                                : 'A combinar';
+
+
+                        let classe = '';
+
+
+                        if (
+                            parcela.status ===
+                            'Quitada'
+                        ) {
+
+                            classe = 'quitada';
+
+                        } else if (
+                            valorPago > 0
+                        ) {
+
+                            classe = 'parcial';
+
+                        }
+
+
+                        let informacao = '';
+
+
+                        if (
+                            parcela.status ===
+                            'Quitada'
+                        ) {
+
+                            informacao =
+                                `
+                                    🟢 Quitada
+                                    • Pago:
+                                    ${formatarMoeda(
+                                        valorPago
+                                    )}
+                                `;
+
+
+                        } else if (
+                            valorPago > 0
+                        ) {
+
+                            informacao =
+                                `
+                                    🔵 Parcial
+                                    • Pago:
+                                    ${formatarMoeda(
+                                        valorPago
+                                    )}
+                                    • Restante:
+                                    ${formatarMoeda(
+                                        valorRestante
+                                    )}
+                                `;
+
+
+                        } else {
+
+                            informacao =
+                                `
+                                    🟠 Aberta
+                                    • Restante:
+                                    ${formatarMoeda(
+                                        valorRestante
+                                    )}
+                                `;
+                        }
+
+
+                        listaParcelas.innerHTML += `
+
+                            <div
+                                class="
+                                    modal-parcela
+                                    ${classe}
+                                "
+                            >
+
+                                <div
+                                    class="
+                                        modal-parcela-topo
+                                    "
+                                >
+
+                                    <strong>
+                                        ${
+                                            parcela.numero_parcela
+                                        }ª parcela
+                                    </strong>
+
+
+                                    <span
+                                        class="
+                                            modal-parcela-valor
+                                        "
+                                    >
+                                        ${formatarMoeda(valor)}
+                                    </span>
+
+                                </div>
+
+
+                                <div
+                                    class="
+                                        modal-parcela-info
+                                    "
+                                >
+
+                                    ${informacao}
+
+                                    <br>
+
+                                    📅 Vencimento:
+                                    ${dataVencimento}
+
+                                </div>
+
+                            </div>
+
+                        `;
+                    }
+                );
+            }
+
+
+            // -----------------------------------------------------
+            // LIMPAR PRÉVIA
+            // -----------------------------------------------------
+
+            const previa =
+                document.getElementById(
+                    'modal-previa-pagamento'
+                );
+
+
+            const previaParcelas =
+                document.getElementById(
+                    'modal-previa-parcelas'
+                );
+
+
+            if (previa) {
+
+                previa.style.display =
+                    'none';
+
+            }
+
+
+            if (previaParcelas) {
+
+                previaParcelas.innerHTML =
+                    '';
+
+            }
+
+
+            // -----------------------------------------------------
+            // ABRIR MODAL
+            // -----------------------------------------------------
+
+            const modal =
+                document.getElementById(
+                    'modal-pagamento'
+                );
+
+
+            if (!modal) {
+
+                alert(
+                    'Modal de pagamento não encontrada.'
+                );
+
+                return;
+            }
+
+
+            modal.classList.add('ativa');
+
+
+            // -----------------------------------------------------
+            // COLOCAR CURSOR NO CAMPO
+            // -----------------------------------------------------
+
+            if (campoValor) {
+
+                setTimeout(
+                    () => campoValor.focus(),
+                    100
+                );
+
+            }
+
+        }
+
+
+        // =========================================================
+        // FECHAR MODAL DE PAGAMENTO
+        // =========================================================
+
+        function fecharModalPagamento() {
+
+            const modal =
+                document.getElementById(
+                    'modal-pagamento'
+                );
+
+
+            if (!modal) {
+                return;
+            }
+
+
+            modal.classList.remove(
+                'ativa'
+            );
+
+
+            const campoValor =
+                document.getElementById(
+                    'modal-valor-pagamento'
+                );
+
+
+            if (campoValor) {
+
+                campoValor.value = '';
+
+            }
+
+
+            const previa =
+                document.getElementById(
+                    'modal-previa-pagamento'
+                );
+
+
+            const previaParcelas =
+                document.getElementById(
+                    'modal-previa-parcelas'
+                );
+
+
+            if (previa) {
+
+                previa.style.display =
+                    'none';
+
+            }
+
+
+            if (previaParcelas) {
+
+                previaParcelas.innerHTML =
+                    '';
+
+            }
+
+
+            window.pendenciaPagamentoAtual =
+                null;
+        }
+
+
+        // =========================================================
+        // CONVERTER VALOR DIGITADO
+        // =========================================================
+
+        function obterValorDigitadoPagamento() {
+
+            const campo =
+                document.getElementById(
+                    'modal-valor-pagamento'
+                );
+
+
+            if (!campo) {
+                return 0;
+            }
+
+
+            let valor =
+                String(
+                    campo.value || ''
+                ).trim();
+
+
+            valor = valor
+                .replace(/R\$/gi, '')
+                .replace(/\s/g, '');
+
+
+            // Caso o usuário digite:
+            // 45
+            // 45,50
+            // 45.50
+            // 1.250,50
+
+            if (
+                valor.includes(',') &&
+                valor.includes('.')
+            ) {
+
+                valor =
+                    valor.replace(/\./g, '')
+                         .replace(',', '.');
+
+
+            } else if (
+                valor.includes(',')
+            ) {
+
+                valor =
+                    valor.replace(',', '.');
+
+            }
+
+
+            return Number(valor);
+        }
+
+
+        // =========================================================
+        // PRÉVIA DA DISTRIBUIÇÃO
+        // =========================================================
+
+        function atualizarPreviaPagamento() {
+
+            const estado =
+                window.pendenciaPagamentoAtual;
+
+
+            const previa =
+                document.getElementById(
+                    'modal-previa-pagamento'
+                );
+
+
+            const container =
+                document.getElementById(
+                    'modal-previa-parcelas'
+                );
+
+
+            const saldoFinal =
+                document.getElementById(
+                    'modal-saldo-final'
+                );
+
+
+            if (
+                !estado ||
+                !previa ||
+                !container
+            ) {
+                return;
+            }
+
+
+            const valor =
+                obterValorDigitadoPagamento();
+
+
+            const restante =
+                Number(
+                    estado.restante || 0
+                );
+
+
+            if (
+                !Number.isFinite(valor) ||
+                valor <= 0
+            ) {
+
+                previa.style.display =
+                    'none';
+
+                container.innerHTML =
+                    '';
+
+                if (saldoFinal) {
+
+                    saldoFinal.innerText =
+                        formatarMoeda(restante);
+
+                }
+
+                return;
+            }
+
+
+            if (valor > restante) {
+
+                previa.style.display =
+                    'block';
+
+
+                container.innerHTML = `
+
+                    <div
+                        class="modal-previa-vazia"
+                        style="
+                            color: #c0392b;
+                            font-weight: 700;
+                        "
+                    >
+                        ⚠️ O valor informado é maior
+                        que o saldo atual de
+                        ${formatarMoeda(restante)}.
+                    </div>
+
+                `;
+
+
+                if (saldoFinal) {
+
+                    saldoFinal.innerText =
+                        formatarMoeda(restante);
+
+                }
+
+                return;
+            }
+
+
+            const novoSaldo =
+                Number(
+                    (
+                        restante -
+                        valor
+                    ).toFixed(2)
+                );
+
+
+            if (saldoFinal) {
+
+                saldoFinal.innerText =
+                    formatarMoeda(novoSaldo);
+
+            }
+
+
+            let valorDisponivel =
+                valor;
+
+
+            let html = '';
+
+
+            const parcelas =
+                Array.isArray(
+                    estado.parcelas
+                )
+                    ? estado.parcelas
+                    : [];
+
+
+            parcelas.forEach(
+                parcela => {
+
+                    if (
+                        valorDisponivel <= 0
+                    ) {
+                        return;
+                    }
+
+
+                    const restanteParcela =
+                        Number(
+                            parcela.valor_restante || 0
+                        );
+
+
+                    if (
+                        restanteParcela <= 0
+                    ) {
+                        return;
+                    }
+
+
+                    const pagamento =
+                        Number(
+                            Math.min(
+                                valorDisponivel,
+                                restanteParcela
+                            ).toFixed(2)
+                        );
+
+
+                    const novoRestante =
+                        Number(
+                            (
+                                restanteParcela -
+                                pagamento
+                            ).toFixed(2)
+                        );
+
+
+                    let classe =
+                        '';
+
+
+                    let status =
+                        'Parcial';
+
+
+                    if (
+                        novoRestante === 0
+                    ) {
+
+                        classe =
+                            'quitada';
+
+                        status =
+                            'Quitada';
+
+                    }
+
+
+                    html += `
+
+                        <div
+                            class="
+                                modal-previa-item
+                                ${classe}
+                            "
+                        >
+
+                            <div
+                                class="
+                                    modal-previa-item-info
+                                "
+                            >
+
+                                <strong>
+                                    ${
+                                        parcela.numero_parcela
+                                    }ª parcela
+                                </strong>
+
+                                <br>
+
+                                ${
+                                    formatarMoeda(
+                                        restanteParcela
+                                    )
+                                }
+
+                                → pagamento de
+
+                                <strong>
+                                    ${
+                                        formatarMoeda(
+                                            pagamento
+                                        )
+                                    }
+                                }
+
+                                <br>
+
+                                ${status}
+
+                            </div>
+
+
+                            <div
+                                class="
+                                    modal-previa-item-valor
+                                "
+                            >
+
+                                Restante:
+                                ${
+                                    formatarMoeda(
+                                        novoRestante
+                                    )
+                                }
+
+                            </div>
+
+                        </div>
+
+                    `;
+
+
+                    valorDisponivel =
+                        Number(
+                            (
+                                valorDisponivel -
+                                pagamento
+                            ).toFixed(2)
+                        );
+                }
+            );
+
+
+            if (!html) {
+
+                html = `
+
+                    <div class="modal-previa-vazia">
+
+                        Nenhuma parcela em aberto
+                        disponível para distribuição.
+
+                    </div>
+
+                `;
+
+            }
+
+
+            previa.style.display =
+                'block';
+
+
+            container.innerHTML =
+                html;
+        }
+                // =========================================================
+        // CONFIRMAR PAGAMENTO PARCIAL
+        // =========================================================
+
+        async function confirmarPagamentoParcial() {
+
+            // -----------------------------------------------------
+            // VERIFICAR PENDÊNCIA SELECIONADA
+            // -----------------------------------------------------
+
+            if (
+                !window.pendenciaPagamentoAtual
+            ) {
+
+                alert(
+                    'Nenhuma pendência foi selecionada.'
+                );
+
+                return;
+            }
+
+
+            const campoValor =
+                document.getElementById(
+                    'modal-valor-pagamento'
+                );
+
+
+            if (!campoValor) {
+
+                alert(
+                    'Campo de pagamento não encontrado.'
+                );
+
+                return;
+            }
+
+
+            // -----------------------------------------------------
+            // PEGAR VALOR DIGITADO
+            // -----------------------------------------------------
+
+            const valor =
+                obterValorDigitadoPagamento();
+
+
+            const restante =
+                Number(
+                    window
+                        .pendenciaPagamentoAtual
+                        .restante || 0
+                );
+
+
+            // -----------------------------------------------------
+            // VALIDAR VALOR
+            // -----------------------------------------------------
+
+            if (
+                !Number.isFinite(valor) ||
+                valor <= 0
+            ) {
+
+                alert(
+                    'Digite um valor de pagamento válido.'
+                );
+
+                campoValor.focus();
+
+                return;
+            }
+
+
+            // -----------------------------------------------------
+            // NÃO PERMITIR PAGAMENTO MAIOR QUE A DÍVIDA
+            // -----------------------------------------------------
+
+            if (valor > restante) {
+
+                alert(
+                    'O pagamento não pode ser maior que ' +
+                    formatarMoeda(restante) +
+                    '.'
+                );
+
+                campoValor.focus();
+
+                return;
+            }
+
+
+            // -----------------------------------------------------
+            // CALCULAR NOVO SALDO
+            // -----------------------------------------------------
+
+            const novoSaldo =
+                Number(
+                    (
+                        restante -
+                        valor
+                    ).toFixed(2)
+                );
+
+
+            // Atualiza imediatamente o resumo
+
+            const saldoFinal =
+                document.getElementById(
+                    'modal-saldo-final'
+                );
+
+
+            if (saldoFinal) {
+
+                saldoFinal.innerText =
+                    formatarMoeda(novoSaldo);
+
+            }
+
+
+            // -----------------------------------------------------
+            // CONFIRMAR COM O USUÁRIO
+            // -----------------------------------------------------
+
+            let mensagem;
+
+
+            if (novoSaldo === 0) {
+
+                mensagem =
+                    `Confirmar pagamento de ` +
+                    `${formatarMoeda(valor)} ` +
+                    `e quitar esta pendência?`;
+
+            } else {
+
+                mensagem =
+                    `Confirmar pagamento de ` +
+                    `${formatarMoeda(valor)}?` +
+                    `\n\n` +
+                    `Novo saldo: ` +
+                    `${formatarMoeda(novoSaldo)}`;
+
+            }
+
+
+            if (!confirm(mensagem)) {
+                return;
+            }
+
+
+            // -----------------------------------------------------
+            // ENVIAR PARA O BACK-END
+            // -----------------------------------------------------
+
+            const id =
+                window
+                    .pendenciaPagamentoAtual
+                    .id;
+
+
+            try {
+
+                const resposta =
+                    await fetch(
+                        `/api/pendencias/${id}/parcial`,
+                        {
+                            method: 'POST',
+
+                            headers: {
+                                'Content-Type':
+                                    'application/json'
+                            },
+
+                            body: JSON.stringify({
+                                valor: valor
+                            })
+                        }
+                    );
+
+
+                const dados =
+                    await resposta.json();
+
+
+                // -------------------------------------------------
+                // VERIFICAR RESPOSTA
+                // -------------------------------------------------
+
+                if (!resposta.ok) {
+
+                    throw new Error(
+                        dados.erro ||
+                        'Erro ao registrar pagamento.'
+                    );
+                }
+
+
+                // -------------------------------------------------
+                // ATUALIZAR TABELA
+                // -------------------------------------------------
+
+                await carregarPendencias();
+
+
+                // -------------------------------------------------
+                // FECHAR MODAL
+                // -------------------------------------------------
+
+                fecharModalPagamento();
+
+
+                // -------------------------------------------------
+                // MENSAGEM FINAL
+                // -------------------------------------------------
+
+                if (
+                    dados.status ===
+                    'Quitado'
+                ) {
+
+                    alert(
+                        'Pagamento recebido com sucesso!\n\n' +
+                        'Pendência quitada.'
+                    );
+
+
+                } else {
+
+                    alert(
+                        'Pagamento registrado com sucesso!\n\n' +
+                        'Novo saldo: ' +
+                        formatarMoeda(
+                            dados.valor_restante
+                        )
+                    );
+
+                }
+
+
+            } catch (erro) {
+
+                console.error(
+                    'Erro ao registrar pagamento parcial:',
+                    erro
+                );
+
+
+                alert(
+                    erro.message ||
+                    'Não foi possível registrar o pagamento.'
+                );
+            }
+        }
+
+
+        // =========================================================
+        // EXPORTAR PENDÊNCIAS EM PDF
+        // =========================================================
+
+        function gerarPDFPendencias() {
+
+            const linhas =
+                document.querySelectorAll(
+                    '#tabela-pendencias tr'
+                );
+
+
+            const dados = [];
+
+
+            linhas.forEach(
+                linha => {
+
+                    const colunas =
+                        linha.querySelectorAll(
+                            'td'
+                        );
+
+
+                    if (
+                        colunas.length === 8
+                    ) {
+
+                        dados.push({
+
+                            cliente:
+                                colunas[0].innerText,
+
+                            itens:
+                                colunas[1].innerText,
+
+                            data_compra:
+                                colunas[2].innerText,
+
+                            original:
+                                colunas[3].innerText,
+
+                            pago:
+                                colunas[4].innerText,
+
+                            saldo:
+                                colunas[5].innerText,
+
+                            situacao:
+                                colunas[6].innerText
+
+                        });
+                    }
+                }
+            );
+
+
+            if (!dados.length) {
+
+                alert(
+                    'Nenhuma pendência para exportar!'
+                );
+
+                return;
+            }
+
+
+            const form =
+                document.createElement(
+                    'form'
+                );
+
+
+            form.method =
+                'POST';
+
+
+            form.action =
+                '/api/relatorios/pendencias/pdf';
+
+
+            form.target =
+                '_blank';
+
+
+            const input =
+                document.createElement(
+                    'input'
+                );
+
+
+            input.type =
+                'hidden';
+
+
+            input.name =
+                'pendencias';
+
+
+            input.value =
+                JSON.stringify(dados);
+
+
+            form.appendChild(input);
+
+
+            document.body.appendChild(
+                form
+            );
+
+
+            form.submit();
+
+
+            form.remove();
+        }
+
+
+        // =========================================================
+        // EVENTOS DA MODAL
+        // =========================================================
+
+        document.addEventListener(
+            'DOMContentLoaded',
+            () => {
+
+                const campoValor =
+                    document.getElementById(
+                        'modal-valor-pagamento'
+                    );
+
+
+                if (campoValor) {
+
+                    // Atualiza a prévia enquanto digita
+
+                    campoValor.addEventListener(
+                        'input',
+                        atualizarPreviaPagamento
+                    );
+
+
+                    // Atualiza novamente ao sair do campo
+
+                    campoValor.addEventListener(
+                        'blur',
+                        atualizarPreviaPagamento
+                    );
+
+
+                    // Permite pressionar ENTER
+
+                    campoValor.addEventListener(
+                        'keydown',
+                        evento => {
+
+                            if (
+                                evento.key ===
+                                'Enter'
+                            ) {
+
+                                evento.preventDefault();
+
+                                confirmarPagamentoParcial();
+                            }
+                        }
+                    );
+                }
+
+
+                // Carregar tabela ao abrir a página
+
+                carregarPendencias();
+
+            }
+        );
+        // =========================================================
+// CADASTRAR PENDÊNCIA EXISTENTE
+// =========================================================
+
+
+// ---------------------------------------------------------
+// ABRIR MODAL
+// ---------------------------------------------------------
+
+async function abrirModalPendenciaExistente() {
+
+    const modal =
+        document.getElementById(
+            'modal-pendencia-existente'
+        );
+
+    if (!modal) {
+        console.error(
+            'Modal de pendência existente não encontrado.'
+        );
+        return;
+    }
+
+
+    modal.classList.add('ativa');
+
+
+    // Limpar formulário
+
+    document.getElementById(
+        'pendencia-existente-data-compra'
+    ).value = '';
+
+    document.getElementById(
+        'pendencia-existente-valor'
+    ).value = '';
+
+    document.getElementById(
+        'pendencia-existente-parcelas'
+    ).value = '1';
+
+
+    // Carregar clientes
+
+    await carregarClientesPendenciaExistente();
+
+
+    // Criar primeira parcela
+
+    atualizarParcelasPendenciaExistente();
+
+}
+
+
+
+// ---------------------------------------------------------
+// FECHAR MODAL
+// ---------------------------------------------------------
+
+function fecharModalPendenciaExistente() {
+
+    const modal =
+        document.getElementById(
+            'modal-pendencia-existente'
+        );
+
+    if (modal) {
+
+        modal.classList.remove('ativa');
+
+    }
+
+}
+
+
+
+// ---------------------------------------------------------
+// CARREGAR CLIENTES
+// ---------------------------------------------------------
+
+async function carregarClientesPendenciaExistente() {
+
+    const select =
+        document.getElementById(
+            'pendencia-existente-cliente'
+        );
+
+
+    if (!select) {
+        return;
+    }
+
+
+    try {
+
+        const resposta =
+            await fetch('/api/clientes/dados');
+
+
+        if (!resposta.ok) {
+
+            throw new Error(
+                'Não foi possível carregar os clientes.'
+            );
+
+        }
+
+
+        const clientes =
+            await resposta.json();
+
+
+        select.innerHTML = `
+            <option value="">
+                Selecione o cliente
+            </option>
+        `;
+
+
+        clientes.forEach(cliente => {
+
+            const option =
+                document.createElement('option');
+
+
+            option.value =
+                cliente.id;
+
+
+            option.textContent =
+                cliente.nome;
+
+
+            select.appendChild(option);
+
+        });
+
+
+    } catch (erro) {
+
+        console.error(
+            'Erro ao carregar clientes:',
+            erro
+        );
+
+
+        alert(
+            'ERRO:' + erro.message
+        );
+
+    }
+
+}
+
+
+
+// ---------------------------------------------------------
+// CONVERTER VALOR MONETÁRIO
+// ---------------------------------------------------------
+
+function converterValorPendenciaExistente(valor) {
+
+    if (
+        typeof valor === 'number'
+    ) {
+
+        return valor;
+
+    }
+
+
+    let texto =
+        String(valor || '')
+            .trim()
+            .replace(/[R$\s]/g, '');
+
+
+    if (
+        texto.includes(',')
+    ) {
+
+        texto =
+            texto
+                .replace(/\./g, '')
+                .replace(',', '.');
+
+    }
+
+
+    const numero =
+        Number(texto);
+
+
+    return Number.isFinite(numero)
+        ? numero
+        : 0;
+
+}
+
+
+
+// ---------------------------------------------------------
+// FORMATAR VALOR
+// ---------------------------------------------------------
+
+function formatarValorPendenciaExistente(valor) {
+
+    return Number(valor || 0)
+        .toLocaleString(
+            'pt-BR',
+            {
+                style: 'currency',
+                currency: 'BRL'
+            }
+        );
+
+}
+
+
+
+// ---------------------------------------------------------
+// ATUALIZAR PARCELAS
+// ---------------------------------------------------------
+
+function atualizarParcelasPendenciaExistente() {
+
+    const quantidade =
+        Number(
+            document.getElementById(
+                'pendencia-existente-parcelas'
+            ).value
+        );
+
+
+    const valorTotal =
+        converterValorPendenciaExistente(
+            document.getElementById(
+                'pendencia-existente-valor'
+            ).value
+        );
+
+
+    const container =
+        document.getElementById(
+            'lista-parcelas-existente'
+        );
+
+
+    if (!container) {
+        return;
+    }
+
+
+    container.innerHTML = '';
+
+
+    if (
+        !quantidade ||
+        quantidade < 1
+    ) {
+
+        return;
+
+    }
+
+
+    // -----------------------------------------------------
+    // DIVISÃO DAS PARCELAS
+    // -----------------------------------------------------
+
+    const valorBase =
+        Math.floor(
+            (
+                valorTotal /
+                quantidade
+            ) * 100
+        ) / 100;
+
+
+    const diferenca =
+        Number(
+            (
+                valorTotal -
+                (
+                    valorBase *
+                    quantidade
+                )
+            ).toFixed(2)
+        );
+
+
+    for (
+        let i = 1;
+        i <= quantidade;
+        i++
+    ) {
+
+        let valorParcela =
+            valorBase;
+
+
+        // A diferença de centavos vai para a última
+
+        if (
+            i === quantidade
+        ) {
+
+            valorParcela =
+                Number(
+                    (
+                        valorBase +
+                        diferenca
+                    ).toFixed(2)
+                );
+
+        }
+
+
+        const item =
+            document.createElement('div');
+
+
+        item.className =
+            'parcela-existente-item';
+
+
+        item.innerHTML = `
+
+            <div>
+
+                <strong>
+                    ${i}ª parcela
+                </strong>
+
+                <div
+                    style="
+                        margin-top: 4px;
+                        color: #777;
+                        font-size: 10px;
+                    "
+                >
+                    ${formatarValorPendenciaExistente(
+                        valorParcela
+                    )}
+                </div>
+
+            </div>
+
+
+            <input
+                type="date"
+                class="data-vencimento-parcela-existente"
+                data-numero="${i}"
+            >
+
+        `;
+
+
+        container.appendChild(item);
+
+    }
+
+}
+
+
+
+// ---------------------------------------------------------
+// SALVAR PENDÊNCIA EXISTENTE
+// ---------------------------------------------------------
+
+async function salvarPendenciaExistente() {
+
+    const clienteId =
+        document.getElementById(
+            'pendencia-existente-cliente'
+        ).value;
+
+
+    const dataCompra =
+        document.getElementById(
+            'pendencia-existente-data-compra'
+        ).value;
+
+
+    const valorTotal =
+        converterValorPendenciaExistente(
+            document.getElementById(
+                'pendencia-existente-valor'
+            ).value
+        );
+
+
+    const quantidadeParcelas =
+        Number(
+            document.getElementById(
+                'pendencia-existente-parcelas'
+            ).value
+        );
+
+
+    // -----------------------------------------------------
+    // VALIDAÇÕES
+    // -----------------------------------------------------
+
+    if (!clienteId) {
+
+        alert(
+            'Selecione o cliente.'
+        );
+
+        return;
+
+    }
+
+
+    if (
+        !valorTotal ||
+        valorTotal <= 0
+    ) {
+
+        alert(
+            'Informe um valor válido para a pendência.'
+        );
+
+        return;
+
+    }
+
+
+    if (!quantidadeParcelas) {
+
+        alert(
+            'Informe a quantidade de parcelas.'
+        );
+
+        return;
+
+    }
+
+
+    const camposVencimento =
+        document.querySelectorAll(
+            '.data-vencimento-parcela-existente'
+        );
+
+
+    if (
+        camposVencimento.length !==
+        quantidadeParcelas
+    ) {
+
+        alert(
+            'Não foi possível identificar todas as parcelas.'
+        );
+
+        return;
+
+    }
+
+
+    const parcelas =
+        [];
+
+
+    for (
+        let i = 0;
+        i < camposVencimento.length;
+        i++
+    ) {
+
+        const campo =
+            camposVencimento[i];
+
+
+        if (!campo.value) {
+
+            alert(
+                `Informe o vencimento da ${i + 1}ª parcela.`
+            );
+
+            campo.focus();
+
+            return;
+
+        }
+
+
+        const valorBase =
+            Math.floor(
+                (
+                    valorTotal /
+                    quantidadeParcelas
+                ) * 100
+            ) / 100;
+
+
+        let valorParcela =
+            valorBase;
+
+
+        if (
+            i ===
+            quantidadeParcelas - 1
+        ) {
+
+            valorParcela =
+                Number(
+                    (
+                        valorTotal -
+                        (
+                            valorBase *
+                            (
+                                quantidadeParcelas - 1
+                            )
+                        )
+                    ).toFixed(2)
+                );
+
+        }
+
+
+        parcelas.push({
+
+            valor:
+                valorParcela,
+
+            data_vencimento:
+                campo.value
+
+        });
+
+    }
+
+
+    // -----------------------------------------------------
+    // CONFIRMAÇÃO
+    // -----------------------------------------------------
+
+    const confirmacao =
+        confirm(
+            `Cadastrar esta pendência de ${formatarValorPendenciaExistente(valorTotal)}?`
+        );
+
+
+    if (!confirmacao) {
+
+        return;
+
+    }
+
+
+    // -----------------------------------------------------
+    // ENVIAR PARA O BACKEND
+    // -----------------------------------------------------
+
+    try {
+
+        const resposta =
+            await fetch(
+                '/api/pendencias/existente',
+                {
+                    method: 'POST',
+
+                    headers: {
+                        'Content-Type':
+                            'application/json'
+                    },
+
+                    body:
+                        JSON.stringify({
+
+                            cliente_id:
+                                Number(clienteId),
+
+                            valor_total:
+                                valorTotal,
+
+                            data_compra:
+                                dataCompra,
+
+                            parcelas:
+                                parcelas
+
+                        })
+
+                }
+            );
+
+
+        const resultado =
+            await resposta.json();
+
+
+        if (!resposta.ok) {
+
+            throw new Error(
+                resultado.erro ||
+                'Não foi possível cadastrar a pendência.'
+            );
+
+        }
+
+
+        alert(
+            'Pendência cadastrada com sucesso! 🌷'
+        );
+
+
+        // -------------------------------------------------
+        // FECHAR MODAL
+        // -------------------------------------------------
+
+        fecharModalPendenciaExistente();
+
+
+        // -------------------------------------------------
+        // ATUALIZAR TABELA
+        // -------------------------------------------------
+
+        await carregarPendencias();
+
+
+    } catch (erro) {
+
+        console.error(
+            'Erro ao cadastrar pendência existente:',
+            erro
+        );
+
+
+        alert(
+            erro.message ||
+            'Não foi possível cadastrar a pendência.'
+        );
+
+    }
+
+}
+
+
+
+// ---------------------------------------------------------
+// ATUALIZAR PARCELAS AO ALTERAR QUANTIDADE
+// ---------------------------------------------------------
+
+document
+    .getElementById(
+        'pendencia-existente-parcelas'
+    )
+    ?.addEventListener(
+        'change',
+        atualizarParcelasPendenciaExistente
+    );
+
+
+
+// ---------------------------------------------------------
+// ATUALIZAR PARCELAS AO ALTERAR VALOR
+// ---------------------------------------------------------
+
+document
+    .getElementById(
+        'pendencia-existente-valor'
+    )
+    ?.addEventListener(
+        'input',
+        atualizarParcelasPendenciaExistente
+    );
+
+
+
+// ---------------------------------------------------------
+// FECHAR MODAL CLICANDO FORA
+// ---------------------------------------------------------
+
+document
+    .getElementById(
+        'modal-pendencia-existente'
+    )
+    ?.addEventListener(
+        'click',
+        function (evento) {
+
+            if (
+                evento.target === this
+            ) {
+
+                fecharModalPendenciaExistente();
+
+            }
+
+        }
+    );
+
+    </script>
+
+</body>
+</html>

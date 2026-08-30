@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pimenta Flor - Produtos e Estoque</title>
+<link rel="stylesheet" href="/style.css">
+
+<style>
+.estoque-topo{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:20px;
+  flex-wrap:wrap;
+  margin-bottom:24px
+}
+
+.estoque-acoes{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap
+}
+
+.btn-secundario{
+  background:#fff;
+  color:#6f6661;
+  border:1px solid #e8dfda;
+  padding:11px 17px;
+  border-radius:13px;
+  font-weight:700;
+  cursor:pointer
+}
+
+.filtros{
+  display:grid;
+  grid-template-columns:1.7fr 1fr 1fr;
+  gap:14px;
+  margin-bottom:22px
+}
+
+.resumo{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;
+  margin-bottom:22px
+}
+
+.resumo-card{
+  background:#fff;
+  border:1px solid #e8dfda;
+  border-radius:18px;
+  padding:19px;
+  box-shadow:0 8px 28px rgba(75,57,49,.055)
+}
+
+.resumo-card span{
+  display:block;
+  color:#9a8f88;
+  font-size:11px;
+  font-weight:700;
+  margin-bottom:7px
+}
+
+.resumo-card strong{
+  font-size:25px;
+  color:#332d2a
+}
+
+.badge-status{
+  display:inline-flex;
+  padding:6px 10px;
+  border-radius:10px;
+  font-size:10px;
+  font-weight:800
+}
+
+.badge-ok{
+  background:#e9f4ec;
+  color:#39714a
+}
+
+.badge-baixo{
+  background:#fff2dc;
+  color:#9a6918
+}
+
+.badge-zero{
+  background:#fbe5e5;
+  color:#a14343
+}
+
+.acoes-produto{
+  display:flex;
+  gap:7px
+}
+
+.btn-editar{
+  background:#f7eeea;
+  color:#8f4f4a;
+  border:0;
+  border-radius:10px;
+  padding:8px 11px;
+  font-weight:700;
+  cursor:pointer;
+  text-decoration:none
+}
+
+.referencia{
+  display:inline-flex;
+  background:#f6e9e5;
+  color:#8f4f4a;
+  padding:5px 8px;
+  border-radius:8px;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.3px
+}
+
+.vazio{
+  text-align:center;
+  color:#9a8f88;
+  padding:38px 15px
+}
+
+@media(max-width:1000px){
+  .filtros{
+    grid-template-columns:1fr 1fr
+  }
+}
+
+@media(max-width:850px){
+  .filtros,
+  .resumo{
+    grid-template-columns:1fr
+  }
+
+  .estoque-topo{
+    align-items:stretch
+  }
+}
+
+@media(max-width:700px){
+  section.card{
+    overflow-x:auto!important
+  }
+
+  .tabela-clientes{
+    min-width:850px
+  }
+}
+
+@media print{
+  .sidebar,
+  .estoque-acoes,
+  .filtros{
+    display:none!important
+  }
+
+  .main-content{
+    margin:0!important
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+
+  <div class="logo-container">
+    <div class="logo-circulo">PF</div>
+
+    <div class="logo-texto">
+      <div class="logo-loja">Pimenta Flor</div>
+      <div class="logo-sub">Gestão da loja</div>
+    </div>
+  </div>
+
+  <div class="menu-secao">Navegação</div>
+
+  <a href="/" class="menu-item">🏠 Início</a>
+  <a href="/clientes" class="menu-item">👥 Clientes</a>
+  <a href="/produtos" class="menu-item active">👙 Produtos</a>
+  <a href="/vendas" class="menu-item">🛒 Vendas</a>
+  <a href="/pendencias" class="menu-item">💰 Pendências</a>
+  <a href="/vendas/historico" class="menu-item">📊 Histórico de Vendas</a>
+  <a href="/relatorios/estoque" class="menu-item">📦 Relatório de Estoque</a>
+
+</div>
+
+<main class="main-content">
+
+  <div class="estoque-topo">
+
+    <div>
+      <h1>👙 Produtos e Estoque</h1>
+
+      <p class="subtitulo-tela">
+        Controle dos produtos cadastrados e da quantidade disponível na loja.
+      </p>
+    </div>
+
+    <div class="estoque-acoes">
+      <button class="btn-secundario" onclick="window.print()">
+        🖨️ Imprimir
+      </button>
+
+      <a href="/produtos/novo" class="btn-pimenta">
+        ＋ Novo Produto
+      </a>
+    </div>
+
+  </div>
+
+
+  <section class="filtros card">
+
+    <div class="form-group">
+
+      <label for="busca">
+        Buscar produto ou referência
+      </label>
+
+      <input
+        id="busca"
+        type="search"
+        placeholder="Digite o nome ou a referência..."
+      >
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label for="categoria">
+        Categoria
+      </label>
+
+      <select id="categoria">
+        <option value="">Todas as categorias</option>
+      </select>
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label for="status">
+        Estoque
+      </label>
+
+      <select id="status">
+
+        <option value="">
+          Todos
+        </option>
+
+        <option value="ok">
+          Disponíveis
+        </option>
+
+        <option value="baixo">
+          Baixo estoque
+        </option>
+
+        <option value="zero">
+          Zerados
+        </option>
+
+      </select>
+
+    </div>
+
+  </section>
+
+
+  <section class="resumo">
+
+    <div class="resumo-card">
+      <span>Total de produtos</span>
+      <strong id="total">0</strong>
+    </div>
+
+    <div class="resumo-card">
+      <span>Baixo estoque</span>
+      <strong id="baixo">0</strong>
+    </div>
+
+    <div class="resumo-card">
+      <span>Zerados</span>
+      <strong id="zerados">0</strong>
+    </div>
+
+  </section>
+
+
+  <section class="card" style="padding:0;overflow:hidden">
+
+    <table
+      class="tabela-clientes"
+      style="border:0;box-shadow:none;width:100%"
+    >
+
+      <thead>
+
+        <tr>
+          <th>Ref.</th>
+          <th>Produto</th>
+          <th>Categoria</th>
+          <th>Preço</th>
+          <th>Qtd. estoque</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+
+      </thead>
+
+      <tbody id="body">
+
+        <tr>
+          <td colspan="7" class="vazio">
+            Carregando produtos...
+          </td>
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </section>
+
+</main>
+
+
+<script>
+
+let produtos = [];
+
+const money = v =>
+  Number(v || 0).toLocaleString(
+    'pt-BR',
+    {
+      style:'currency',
+      currency:'BRL'
+    }
+  );
+
+
+const esc = t =>
+  String(t ?? '').replace(
+    /[&<>"']/g,
+    c => ({
+      '&':'&amp;',
+      '<':'&lt;',
+      '>':'&gt;',
+      '"':'&quot;',
+      "'":'&#039;'
+    }[c])
+  );
+
+
+function statusProduto(qtd){
+
+  qtd = Number(qtd || 0);
+
+  if(qtd <= 0){
+
+    return {
+      key:'zero',
+      label:'ZERADO',
+      cls:'badge-zero'
+    };
+
+  }
+
+  if(qtd < 5){
+
+    return {
+      key:'baixo',
+      label:'BAIXO ESTOQUE',
+      cls:'badge-baixo'
+    };
+
+  }
+
+  return {
+    key:'ok',
+    label:'DISPONÍVEL',
+    cls:'badge-ok'
+  };
+
+}
+
+
+function render(){
+
+  const busca =
+    document
+      .getElementById('busca')
+      .value
+      .trim()
+      .toLowerCase();
+
+  const cat =
+    document.getElementById('categoria').value;
+
+  const st =
+    document.getElementById('status').value;
+
+
+  const lista = produtos.filter(p => {
+
+    const s =
+      statusProduto(
+        p.quantidade_estoque
+      );
+
+
+    const nome =
+      String(p.nome || '')
+        .toLowerCase();
+
+    const referencia =
+      String(p.referencia || '')
+        .toLowerCase();
+
+
+    const correspondeBusca =
+      !busca ||
+      nome.includes(busca) ||
+      referencia.includes(busca);
+
+
+    return (
+      correspondeBusca &&
+      (!cat ||
+        String(p.categoria || '') === cat) &&
+      (!st || s.key === st)
+    );
+
+  });
+
+
+  document.getElementById('total').textContent =
+    produtos.length;
+
+
+  document.getElementById('baixo').textContent =
+    produtos.filter(
+      p =>
+        statusProduto(
+          p.quantidade_estoque
+        ).key === 'baixo'
+    ).length;
+
+
+  document.getElementById('zerados').textContent =
+    produtos.filter(
+      p =>
+        statusProduto(
+          p.quantidade_estoque
+        ).key === 'zero'
+    ).length;
+
+
+  const body =
+    document.getElementById('body');
+
+
+  if(!lista.length){
+
+    body.innerHTML =
+      '<tr>' +
+      '<td colspan="7" class="vazio">' +
+      'Nenhum produto encontrado.' +
+      '</td>' +
+      '</tr>';
+
+    return;
+
+  }
+
+
+  body.innerHTML =
+    lista.map(p => {
+
+      const s =
+        statusProduto(
+          p.quantidade_estoque
+        );
+
+
+      const referencia =
+        p.referencia
+          ? `<span class="referencia">
+               ${esc(p.referencia)}
+             </span>`
+          : '<span style="color:#aaa">—</span>';
+
+
+      return `
+
+        <tr>
+
+          <td>
+            ${referencia}
+          </td>
+
+          <td>
+            <strong>
+              ${esc(p.nome)}
+            </strong>
+          </td>
+
+          <td>
+            ${esc(
+              p.categoria ||
+              'Sem categoria'
+            )}
+          </td>
+
+          <td>
+            ${money(p.preco)}
+          </td>
+
+          <td>
+            ${Number(
+              p.quantidade_estoque || 0
+            )}
+          </td>
+
+          <td>
+            <span class="badge-status ${s.cls}">
+              ${s.label}
+            </span>
+          </td>
+
+          <td>
+
+            <div class="acoes-produto">
+
+              <a
+                class="btn-editar"
+                href="/produtos/${p.id}/editar"
+              >
+                ✏️ Editar
+              </a>
+
+            </div>
+
+          </td>
+
+        </tr>
+
+      `;
+
+    }).join('');
+
+}
+
+
+async function carregar(){
+
+  try{
+
+    const r =
+      await fetch('/api/produtos/dados');
+
+
+    const d =
+      await r.json();
+
+
+    if(!r.ok)
+      throw new Error();
+
+
+    produtos =
+      Array.isArray(d)
+        ? d
+        : [];
+
+
+    const categorias =
+      [
+        ...new Set(
+          produtos
+            .map(p => p.categoria)
+            .filter(Boolean)
+        )
+      ].sort();
+
+
+    const select =
+      document.getElementById(
+        'categoria'
+      );
+
+
+    categorias.forEach(c => {
+
+      const o =
+        document.createElement(
+          'option'
+        );
+
+      o.value = c;
+      o.textContent = c;
+
+      select.appendChild(o);
+
+    });
+
+
+    render();
+
+
+  }catch(e){
+
+    document.getElementById(
+      'body'
+    ).innerHTML =
+      '<tr>' +
+      '<td colspan="7" class="vazio">' +
+      'Não foi possível carregar os produtos.' +
+      '</td>' +
+      '</tr>';
+
+  }
+
+}
+
+
+['busca','categoria','status']
+  .forEach(id => {
+
+    document
+      .getElementById(id)
+      .addEventListener(
+        'input',
+        render
+      );
+
+  });
+
+
+window.addEventListener(
+  'load',
+  carregar
+);
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pimenta Flor - Registrar Venda</title>
+    
+    <!-- 1. Links do Google Fonts (Obrigatório para baixar a fonte) -->
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- 2. Seu arquivo de estilo externo -->
+    <link rel="stylesheet" href="/style.css">
+    
+    <style>
+        .layout-venda { display: grid; grid-template-columns: minmax(300px, 0.85fr) minmax(420px, 1.35fr); gap: 24px; align-items: start; }
+        .col-formulario, .col-carrinho { min-width: 0; }
+        .seletor-produto { display: flex; flex-direction: column; gap: 16px; margin-top: 18px; }
+        .campo-com-acao { display: grid; grid-template-columns: 1fr 100px; gap: 12px; align-items: end; }
+        select { height: 46px; padding: 0 14px; border: 1px solid var(--borda-suave); border-radius: var(--raio-botao); font-size: 13px; color: var(--cor-texto); background: #fff; transition: border-color .2s ease, box-shadow .2s ease; width: 100%; }
+        select:focus { outline: none; border-color: var(--cor-principal); box-shadow: 0 0 0 4px rgba(192,57,43,.08); }
+        .tabela-carrinho { width: 100%; border-collapse: separate; border-spacing: 0; background: white; border: 1px solid var(--borda-suave); border-radius: var(--raio-card); overflow: hidden; box-shadow: var(--sombra-card); }
+        .tabela-carrinho th { background: #fffaf9; color: var(--cor-principal); font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; padding: 13px 14px; border-bottom: 1px solid var(--borda-suave); text-align: left; }
+        .tabela-carrinho td { padding: 13px 14px; font-size: 13px; border-bottom: 1px solid #f0ebe7; vertical-align: middle; }
+        .tabela-carrinho tr:last-child td { border-bottom: none; }
+        .produto-sacola { font-weight: 700; color: var(--cor-texto); }
+        .controle-qtd { display: inline-flex; align-items: center; border: 1px solid var(--borda-suave); border-radius: 10px; overflow: hidden; background: #fff; }
+        .controle-qtd button { border: 0; background: #fff8f6; color: var(--cor-principal); width: 28px; height: 30px; cursor: pointer; font-weight: 800; }
+        .controle-qtd button:hover { background: #f8e5e0; }
+        .controle-qtd span { min-width: 32px; text-align: center; font-weight: 700; font-size: 12px; }
+        .btn-remover { background: #fceceb; color: var(--cor-principal); border: none; padding: 7px 9px; border-radius: 9px; font-weight: 700; font-size: 11px; cursor: pointer; transition: all .2s; }
+        .btn-remover:hover { background: var(--cor-principal); color: white; }
+        .box-total { background: linear-gradient(145deg,#fff,#fff9f7); border: 1px solid var(--borda-suave); border-radius: var(--raio-card); padding: 19px 20px; margin-top: 18px; box-shadow: var(--sombra-card); display: flex; justify-content: space-between; align-items: center; }
+        .box-total span { font-size: 11px; color: var(--cor-texto-mutado); font-weight: 800; text-transform: uppercase; letter-spacing: .5px; }
+        .box-total .preco-grande { font-size: 27px; font-weight: 800; color: #4f9b70; }
+        .aviso-pendencia { display: none; margin-top: 12px; padding: 11px 13px; border-radius: 11px; background: #fff7e8; color: #8b6421; font-size: 12px; font-weight: 600; line-height: 1.45; }
+        .aviso-pendencia.mostrar { display: block; }
+        .parcelamento-pendencia {
+    display: none;
+    margin-top: 14px;
+    padding: 15px;
+    border: 1px solid var(--borda-suave);
+    border-radius: 13px;
+    background: #fffaf8;
+}
+
+.parcelamento-pendencia.mostrar {
+    display: block;
+}
+
+.parcelamento-titulo {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    color: var(--cor-texto);
+    font-size: 12px;
+}
+
+.parcelamento-titulo span {
+    color: var(--cor-texto-mutado);
+    font-size: 11px;
+}
+
+.parcelas-opcoes {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.parcela-opcao {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 10px 5px;
+    border: 1px solid var(--borda-suave);
+    border-radius: 10px;
+    background: #fff;
+    cursor: pointer;
+    transition: all .2s ease;
+}
+
+.parcela-opcao:hover {
+    border-color: var(--cor-principal);
+    background: #fff7f5;
+}
+
+.parcela-opcao input {
+    position: absolute;
+    opacity: 0;
+}
+
+.parcela-opcao input:checked + span {
+    color: var(--cor-principal);
+}
+
+.parcela-opcao:has(input:checked) {
+    border-color: var(--cor-principal);
+    background: #fff3f0;
+    box-shadow: 0 0 0 2px rgba(192,57,43,.08);
+}
+
+.parcela-opcao span {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--cor-texto);
+}
+
+.parcela-opcao strong {
+    font-size: 10px;
+    color: #4f9b70;
+}
+
+@media (max-width: 620px) {
+    .parcelas-opcoes {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+        .acoes-carrinho { display: flex; gap: 10px; justify-content: flex-end; margin-top: 14px; }
+        .btn-secundario { background: #fff; color: var(--cor-texto-mutado); border: 1px solid var(--borda-suave); padding: 10px 14px; border-radius: var(--raio-botao); font-weight: 700; cursor: pointer; }
+        .btn-secundario:hover { background: #fbf6f4; color: var(--cor-principal); }
+        .toast-notificacao { position: fixed; bottom: 30px; right: 30px; background: #211e1c; color: white; padding: 14px 19px; border-radius: 12px; font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.16); transform: translateY(100px); opacity: 0; transition: all .35s ease; z-index: 9999; }
+        .toast-notificacao.mostrar { transform: translateY(0); opacity: 1; }
+        .toast-sucesso { border-left: 4px solid #4f9b70; }
+        .botao-finalizar:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+        @media (max-width: 980px) { .layout-venda { grid-template-columns: 1fr; } }
+        @media (max-width: 620px) { .campo-com-acao { grid-template-columns: 1fr; } .tabela-carrinho { display: block; overflow-x: auto; white-space: nowrap; } .acoes-carrinho { flex-direction: column; } .toast-notificacao { left: 18px; right: 18px; bottom: 18px; } }
+
+        .referencia-sacola{
+    display:inline-flex;
+    background:#f6e9e5;
+    color:var(--cor-principal);
+    padding:5px 8px;
+    border-radius:8px;
+    font-size:10px;
+    font-weight:800;
+    white-space:nowrap;
+}
+    </style>
+</head>
+
+<body>
+
+    <!-- Menu Lateral Padronizado -->
+    <div class="sidebar">
+        <div class="logo-container">
+            <div class="logo-circulo">P</div>
+            <div class="logo-texto">
+                <span class="logo-loja">Pimenta Flor</span>
+                <span class="logo-sub">Gestão da Loja</span>
+            </div>
+        </div>
+        <hr style="border: 0; border-top: 1px solid var(--borda-suave); margin-bottom: 20px;">
+        <a href="/" class="menu-item">📋 Início</a>
+        <a href="/clientes" class="menu-item">👥 Clientes</a>
+        <a href="/produtos" class="menu-item">📦 Produtos</a>
+        <a href="/vendas" class="menu-item active">🛒 Vendas</a>
+        <a href="/pendencias" class="menu-item">📖 Pendências</a>
+        <div class="menu-secao">Relatórios</div>
+        <a href="/relatorios/estoque" class="menu-item">📊 Estoque</a>
+        <a href="/vendas/historico" class="menu-item">📈 Vendas</a>
+        <a href="/relatorios/pendencias" class="menu-item">📖 Pendências</a>
+    </div>
+
+    <!-- Conteúdo Principal -->
+    <div class="main-content">
+        <h1>🛒 Nova Venda</h1>
+        <p class="subtitulo-tela">Monte a sacola com quantas peças quiser e finalize tudo em uma única venda.</p>
+
+        <div class="layout-venda">
+            <!-- Coluna de Seleção de Peças -->
+            <div class="col-formulario">
+                <div class="form-cadastro">
+                    <h3>🛒 Montar a Sacola</h3>
+                    <div style="display: flex; flex-direction: column; gap: 18px; margin-top: 15px;">
+                        
+                        <div class="form-group" style="width: 100%;">
+                            <label for="cliente_id">Selecione a Cliente:</label>
+                            <select id="cliente_id">
+                                <option value="">-- Consumidor Final (Sem Vínculo) --</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" style="width: 100%;">
+                            <label for="produto_id">Produto / Peça:</label>
+                            <select id="produto_id">
+                                <option value="" disabled selected>-- Escolha a peça --</option>
+                            </select>
+                            <small id="estoque-disponivel" style="color: var(--cor-texto-mutado); font-size: 11px;"></small>
+                        </div>
+
+                        <div class="campo-com-acao">
+                            <div class="form-group" style="width: 100%;">
+                                <label for="quantidade">Quantidade:</label>
+                                <input type="number" id="quantidade" value="1" min="1" step="1" style="width: 100%;">
+                            </div>
+                            <button type="button" class="btn-pimenta" onclick="adicionarAoCarrinho()" title="Adicionar item">＋</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coluna do Carrinho e Finalização -->
+            <div class="col-carrinho">
+                <div class="card" style="padding: 20px;">
+                    <h3>🛍️ Sacola de Compras Atual</h3>
+                    <p style="color: var(--texto-mutado); font-size: 13px; margin-bottom: 15px;">Revise os itens, quantidades e valores antes de finalizar.</p>
+                    
+                    <table class="tabela-carrinho">
+                        <thead>
+                              <tr>
+                                <th>Ref.</th>
+                                <th>Produto</th>
+                                <th>Preço Unit.</th>
+                                <th>Qtd.</th>
+                                <th>Subtotal</th>
+                                <th>Ações</th>
+                                </tr>
+
+
+                        </thead>
+                        <tbody id="itens-sacola">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #8c8581; padding: 30px;">Nenhum produto na sacola ainda.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="box-total">
+                        <span>Valor Total Final:</span>
+                        <div class="preco-grande" id="valor-total-carrinho">R$ 0,00</div>
+                    </div>
+
+                    <div class="form-group" style="width: 100%; margin-top: 20px;">
+                        <label for="tipo_pagamento">Forma de Pagamento Final:</label>
+                        <select id="tipo_pagamento">
+                            <option value="Pix">Pix / Dinheiro</option>
+                            <option value="Cartão">Cartão de Crédito/Débito</option>
+                            <option value="Pendência">⚠️ Pendência (Antigo Fiado)</option>
+                        </select>
+                    </div>
+
+                    <div id="aviso-pendencia" class="aviso-pendencia">⚠️ <strong>Pendência:</strong> selecione uma cliente cadastrada para registrar quem ficou devendo e o que foi levado.</div>
+                    <div id="parcelamento-pendencia" class="parcelamento-pendencia">
+
+    <div class="parcelamento-titulo">
+        💳 <strong>Parcelamento do fiado</strong>
+        <span>Escolha em quantas vezes a cliente irá pagar.</span>
+    </div>
+
+    <div class="parcelas-opcoes">
+
+        <label class="parcela-opcao">
+            <input type="radio" name="numero_parcelas" value="1" checked>
+            <span>1x</span>
+            <strong id="valor-parcela-1">R$ 0,00</strong>
+        </label>
+
+        <label class="parcela-opcao">
+            <input type="radio" name="numero_parcelas" value="2">
+            <span>2x</span>
+            <strong id="valor-parcela-2">R$ 0,00</strong>
+        </label>
+
+        <label class="parcela-opcao">
+            <input type="radio" name="numero_parcelas" value="3">
+            <span>3x</span>
+            <strong id="valor-parcela-3">R$ 0,00</strong>
+        </label>
+
+        <label class="parcela-opcao">
+            <input type="radio" name="numero_parcelas" value="4">
+            <span>4x</span>
+            <strong id="valor-parcela-4">R$ 0,00</strong>
+        </label>
+
+        <label class="parcela-opcao">
+            <input type="radio" name="numero_parcelas" value="5">
+            <span>5x</span>
+            <strong id="valor-parcela-5">R$ 0,00</strong>
+        </label>
+
+    </div>
+
+</div>           
+                    <div class="acoes-carrinho">
+                        <button type="button" class="btn-secundario" onclick="limparCarrinho()">Limpar sacola</button>
+                        <button id="btn-finalizar" type="button" class="btn-pimenta botao-finalizar" onclick="finalizarVendaCompleta()">✓ Finalizar Venda</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Div da Mensagem Flutuante Estilizada -->
+    <div id="toast" class="toast-notificacao toast-sucesso"></div>
+    <script>
+        let produtosCarregados = [];
+        let carrinho = [];
+
+        function formatarMoeda(valor) {
+            return Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function escaparHTML(valor) {
+            return String(valor).replace(/[&<>'"]/g, caractere => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+            }[caractere]));
+        }
+
+        function exibirAviso(mensagem) {
+            const toast = document.getElementById('toast');
+            toast.innerHTML = `✨ &nbsp; ${escaparHTML(mensagem)}`;
+            toast.classList.add('mostrar');
+            clearTimeout(window._toastTimer);
+            window._toastTimer = setTimeout(() => toast.classList.remove('mostrar'), 3000);
+        }
+
+        async function carregarFormulario() {
+            try {
+                const [resClientes, resProdutos] = await Promise.all([
+                    fetch('/api/clientes/dados'),
+                    fetch('/api/produtos/dados')
+                ]);
+
+                if (!resClientes.ok || !resProdutos.ok) throw new Error('Não foi possível carregar clientes e produtos.');
+
+                const clientes = await resClientes.json();
+                produtosCarregados = await resProdutos.json();
+
+                const selectClientes = document.getElementById('cliente_id');
+                clientes.forEach(c => {
+                    selectClientes.insertAdjacentHTML('beforeend', `<option value="${c.id}">${escaparHTML(c.nome)}</option>`);
+                });
+
+                atualizarProdutosDisponiveis();
+                atualizarEstadoFinalizacao();
+            } catch (err) {
+                console.error('Erro ao carregar os dados:', err);
+                alert('Não foi possível carregar os dados da loja.');
+            }
+        }
+
+        function atualizarProdutosDisponiveis() {
+            const selectProdutos = document.getElementById('produto_id');
+            const selecionado = selectProdutos.value;
+            selectProdutos.innerHTML = '<option value="" disabled selected>-- Escolha a peça --</option>';
+
+            produtosCarregados.forEach(p => {
+                const noEstoque = Number(p.quantidade_estoque) <= 0;
+                const option = document.createElement('option');
+                option.value = p.id;
+                option.disabled = noEstoque;
+                option.textContent =
+                  `${p.referencia ? 'Ref. ' + p.referencia + ' — ' : ''}` +
+                  `${p.nome} — ${formatarMoeda(p.preco)} — estoque: ${p.quantidade_estoque}`;
+                selectProdutos.appendChild(option);
+            });
+
+            if (selecionado && produtosCarregados.some(p => String(p.id) === String(selecionado) && p.quantidade_estoque > 0)) {
+                selectProdutos.value = selecionado;
+            }
+            mostrarEstoqueSelecionado();
+        }
+
+        function mostrarEstoqueSelecionado() {
+            const id = document.getElementById('produto_id').value;
+            const produto = produtosCarregados.find(p => String(p.id) === String(id));
+            document.getElementById('estoque-disponivel').textContent = produto
+                ? `Disponível agora: ${produto.quantidade_estoque} unidade(s).`
+                : '';
+        }
+
+        function adicionarAoCarrinho() {
+            const prodId = document.getElementById('produto_id').value;
+            const qtd = Number(document.getElementById('quantidade').value);
+
+            if (!prodId) return alert('Selecione um produto antes de adicionar.');
+            if (!Number.isInteger(qtd) || qtd <= 0) return alert('Informe uma quantidade válida.');
+
+            const produto = produtosCarregados.find(p => String(p.id) === String(prodId));
+            if (!produto) return alert('Produto não encontrado.');
+
+            const itemExistente = carrinho.find(item => item.id === produto.id);
+            const quantidadeAtual = itemExistente ? itemExistente.quantidade : 0;
+            const novaQuantidade = quantidadeAtual + qtd;
+
+            if (novaQuantidade > Number(produto.quantidade_estoque)) {
+                return alert(`Estoque insuficiente para ${produto.nome}. Disponível: ${produto.quantidade_estoque}.`);
+            }
+
+            if (itemExistente) {
+                itemExistente.quantidade = novaQuantidade;
+            } else {
+                carrinho.push({
+                    id: produto.id,
+                    nome: produto.nome,
+                    referencia: produto.referencia || '',
+                    preco: Number(produto.preco),
+                    quantidade: qtd,
+                    estoque: Number(produto.quantidade_estoque)
+                });
+            }
+
+            exibirAviso(`${produto.nome} foi adicionado à sacola.`);
+            atualizarTabelaCarrinho();
+            document.getElementById('produto_id').value = '';
+            document.getElementById('quantidade').value = 1;
+            mostrarEstoqueSelecionado();
+        }
+
+        function alterarQuantidade(index, delta) {
+            const item = carrinho[index];
+            if (!item) return;
+
+            const novaQuantidade = item.quantidade + delta;
+            if (novaQuantidade < 1) return removerDoCarrinho(index);
+            if (novaQuantidade > item.estoque) {
+                return alert(`Não há estoque suficiente de ${item.nome}. Disponível: ${item.estoque}.`);
+            }
+
+            item.quantidade = novaQuantidade;
+            atualizarTabelaCarrinho();
+        }
+
+        function removerDoCarrinho(index) {
+            const item = carrinho[index];
+            if (!item) return;
+            carrinho.splice(index, 1);
+            exibirAviso(`${item.nome} foi retirado da sacola.`);
+            atualizarTabelaCarrinho();
+        }
+
+        function limparCarrinho() {
+            if (!carrinho.length) return;
+            if (!confirm('Deseja limpar todos os itens da sacola?')) return;
+            carrinho = [];
+            atualizarTabelaCarrinho();
+            exibirAviso('Sacola limpa.');
+        }
+
+        function atualizarTabelaCarrinho() {
+    const tbody = document.getElementById('itens-sacola');
+    const totalElem = document.getElementById('valor-total-carrinho');
+
+    tbody.innerHTML = '';
+
+    let totalGeral = 0;
+
+    if (!carrinho.length) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" style="text-align:center;color:var(--cor-texto-mutado);padding:34px;">
+                    Sua sacola ainda está vazia.
+                </td>
+            </tr>
+        `;
+
+        totalElem.textContent = formatarMoeda(0);
+        atualizarEstadoFinalizacao();
+        return;
+    }
+
+    carrinho.forEach((item, index) => {
+
+        const subtotal =
+            item.preco * item.quantidade;
+
+        totalGeral += subtotal;
+
+        tbody.insertAdjacentHTML('beforeend', `
+            <tr>
+
+                <td>
+                    <span class="referencia-sacola">
+                        ${escaparHTML(item.referencia || '—')}
+                    </span>
+                </td>
+
+                <td>
+                    <span class="produto-sacola">
+                        ${escaparHTML(item.nome)}
+                    </span>
+                </td>
+
+                <td>
+                    ${formatarMoeda(item.preco)}
+                </td>
+
+                <td>
+                    <div class="controle-qtd">
+
+                        <button
+                            type="button"
+                            onclick="alterarQuantidade(${index}, -1)"
+                            aria-label="Diminuir"
+                        >
+                            −
+                        </button>
+
+                        <span>
+                            ${item.quantidade}
+                        </span>
+
+                        <button
+                            type="button"
+                            onclick="alterarQuantidade(${index}, 1)"
+                            aria-label="Aumentar"
+                        >
+                            ＋
+                        </button>
+
+                    </div>
+                </td>
+
+                <td>
+                    <strong>
+                        ${formatarMoeda(subtotal)}
+                    </strong>
+                </td>
+
+                <td>
+                    <button
+                        type="button"
+                        class="btn-remover"
+                        onclick="removerDoCarrinho(${index})"
+                    >
+                        Remover
+                    </button>
+                </td>
+
+            </tr>
+        `);
+    });
+
+    totalElem.textContent =
+        formatarMoeda(totalGeral);
+
+    atualizarEstadoFinalizacao();
+}
+       function atualizarEstadoFinalizacao() {
+    const pagamento = document.getElementById('tipo_pagamento').value;
+    const cliente = document.getElementById('cliente_id').value;
+
+    const aviso = document.getElementById('aviso-pendencia');
+    const parcelamento = document.getElementById('parcelamento-pendencia');
+    const botao = document.getElementById('btn-finalizar');
+
+    const pendenciaSemCliente =
+        pagamento === 'Pendência' && !cliente;
+
+    // Mostra o aviso quando for venda fiada
+    aviso.classList.toggle(
+        'mostrar',
+        pagamento === 'Pendência'
+    );
+
+    // Mostra as opções de 1x até 5x somente para Pendência
+    parcelamento.classList.toggle(
+        'mostrar',
+        pagamento === 'Pendência'
+    );
+
+    // Calcula o valor de cada parcela
+    if (pagamento === 'Pendência') {
+        const total = carrinho.reduce(
+            (soma, item) =>
+                soma + (Number(item.preco) * Number(item.quantidade)),
+            0
+        );
+
+        for (let parcelas = 1; parcelas <= 5; parcelas++) {
+            const valor = total / parcelas;
+
+            const elemento =
+                document.getElementById(`valor-parcela-${parcelas}`);
+
+            if (elemento) {
+                elemento.textContent =
+                    formatarMoeda(valor);
+            }
+        }
+    }
+
+    botao.disabled =
+        carrinho.length === 0 ||
+        pendenciaSemCliente;
+}
+        async function finalizarVendaCompleta() {
+            if (!carrinho.length) return alert('Sua sacola está vazia.');
+
+            const clienteId = document.getElementById('cliente_id').value || null;
+            const pagamento = document.getElementById('tipo_pagamento').value;
+
+            if (pagamento === 'Pendência' && !clienteId) {
+                return alert('Para registrar uma pendência, selecione uma cliente cadastrada.');
+            }
+
+            const botao = document.getElementById('btn-finalizar');
+            botao.disabled = true;
+            botao.textContent = 'Salvando...';
+
+            try {
+
+    const numeroParcelas = pagamento === 'Pendência'
+        ? Number(
+            document.querySelector(
+                'input[name="numero_parcelas"]:checked'
+            )?.value || 1
+        )
+        : 1;
+
+    const resposta = await fetch('/api/vendas', {
+
+        method: 'POST',
+
+        headers: {
+            'Content-Type': 'application/json'
+        },
+
+        body: JSON.stringify({
+         cliente_id: clienteId,
+         tipo_pagamento: pagamento,
+         itens: carrinho,
+         numero_parcelas: Number(
+            document.querySelector('input[name="numero_parcelas"]:checked').value
+    )
+})
+    });
+
+                const dados = await resposta.json().catch(() => ({}));
+                if (!resposta.ok) throw new Error(dados.erro || 'Não foi possível salvar a venda.');
+
+                exibirAviso(`Venda #${dados.venda_id} registrada com sucesso!`);
+                setTimeout(() => { window.location.href = '/vendas'; }, 1200);
+            } catch (err) {
+                console.error(err);
+                alert(err.message);
+                botao.disabled = false;
+                botao.textContent = '✓ Finalizar Venda';
+            }
+        }
+
+        document.getElementById('produto_id').addEventListener('change', mostrarEstoqueSelecionado);
+        document.getElementById('cliente_id').addEventListener('change', atualizarEstadoFinalizacao);
+        document.getElementById('tipo_pagamento').addEventListener('change', atualizarEstadoFinalizacao);
+        document.getElementById('quantidade').addEventListener('keydown', event => {
+            if (event.key === 'Enter') adicionarAoCarrinho();
+        });
+
+        window.addEventListener('load', () => {
+            carregarFormulario();
+            atualizarTabelaCarrinho();
+        });
+    </script>
+</body>
+</html>

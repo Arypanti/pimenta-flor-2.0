@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pimenta Flor - Relatório de Pendências</title>
+    
+    <!-- 1. Links do Google Fonts (Obrigatório para baixar a fonte) -->
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- 2. Seu arquivo de estilo externo -->
+    <link rel="stylesheet" href="/style.css">
+    
+    <style>
+        /* Aplica a fonte Inter bonita em todos os elementos desta tela */
+        * { 
+            font-family: 'Inter', sans-serif; 
+        }
+
+        .resumo-pendencias { display: flex; gap: 20px; margin-bottom: 25px; }
+        .card-resumo { background: #fff; border: 1px solid #ebe4cb; border-radius: 12px; padding: 20px; flex: 1; }
+        .card-resumo h3 { margin: 0 0 10px 0; font-size: 14px; color: #998e83; text-transform: uppercase; }
+        .card-resumo .valor { font-size: 24px; font-weight: bold; color: #c0392b; margin: 0; }
+        .ref-itens { color: #e67e22; font-weight: 500; font-size: 12px; }
+    </style>
+</head>
+
+<body>
+
+    <!-- Menu Lateral -->
+    <div class="sidebar">
+        <div class="logo-container">
+            <div class="logo-circulo">P</div>
+            <div class="logo-texto">
+                <span class="logo-loja">Pimenta Flor</span>
+                <span class="logo-sub">Gestão da Loja</span>
+            </div>
+        </div>
+        <hr style="border: 0; border-top: 1px solid var(--borda-suave); margin-bottom: 20px;">
+        <a href="/" class="menu-item">📋 Início</a>
+        <a href="/clientes" class="menu-item">👥 Clientes</a>
+        <a href="/produtos" class="menu-item">📦 Produtos</a>
+        <a href="/vendas" class="menu-item">🛒 Vendas</a>
+        <a href="/pendencias" class="menu-item">📖 Pendências</a>
+        <div class="menu-secao">Relatórios</div>
+        <a href="/relatorios/estoque" class="menu-item">📊 Estoque</a>
+        <a href="/vendas/historico" class="menu-item">📈 Vendas</a>
+        <a href="/relatorios/pendencias" class="menu-item active">📖 Pendências</a>
+    </div>
+
+    <!-- Conteúdo Principal -->
+    <div class="main-content">
+        <div class="topo-filtros">
+            <div>
+                <h1>Relatório de Pendências</h1>
+                <p class="subtitulo-tela" style="margin-bottom: 0;">Resumo financeiro de valores a receber de clientes.</p>
+            </div>
+            <div class="filtro-datas">
+                <button class="btn-pimenta" style="background-color: #27ae60; padding: 10px 20px; border-radius: 12px;" onclick="gerarPDFPendencias()">📄 Exportar PDF</button>
+            </div>
+        </div>
+
+        <div class="resumo-pendencias">
+            <div class="card-resumo" style="border-left: 4px solid #c0392b;">
+                <h3>Total em Aberto 💰</h3>
+                <p class="valor" id="total-aberto">R$ 0,00</p>
+            </div>
+            <div class="card-resumo">
+                <h3>Clientes Inadimplentes 👥</h3>
+                <p class="valor" id="total-clientes-pendentes" style="color: #333;">0</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Detalhamento por Cliente</h2>
+            <p style="color: var(--texto-mutado); font-size: 14px; margin-bottom: 20px;">Lista de clientes com saldos pendentes ou parciais ativos.</p>
+            <table class="tabela-clientes" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Referência / Itens</th>
+                        <th>Telefone</th>
+                        <th>Data Compra</th>
+                        <th>Saldo Restante</th>
+                        <th>Situação</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-pendencias">
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #777;">Carregando dados...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        async function carregarPendencias() {
+            const tabela = document.getElementById('tabela-pendencias');
+            const elemTotal = document.getElementById('total-aberto');
+            const elemQtd = document.getElementById('total-clientes-pendentes');
+            
+            try {
+                const res = await fetch('/api/relatorios/pendencias/dados');
+                const dados = await res.json();
+                tabela.innerHTML = '';
+
+                let somaValor = 0;
+                let clientesContados = new Set();
+
+                if (dados.length > 0) {
+                    dados.forEach(p => {
+                        somaValor += p.valor_restante;
+                        if(p.valor_restante > 0) clientesContados.add(p.cliente_nome);
+
+                        const dataCompraFormatada = p.data_compra_br || "06/08/2026";
+                        
+                        let dataVencFormatada = "A combinar";
+                        let alertaAtraso = `<br><span style="color: #7f8c8d; font-size: 11px;">⏱️ Prazo padrão: 30 dias</span>`;
+                        
+                        if (p.data_original) {
+                            const dataLimpa = p.data_original.split(' ');
+                            const cObj = new Date(dataLimpa + "T00:00:00");
+                            
+                            if (!isNaN(cObj)) {
+                                cObj.setDate(cObj.getDate() + 30);
+                                dataVencFormatada = cObj.toLocaleDateString('pt-BR');
+
+                                const hojeObj = new Date();
+                                hojeObj.setHours(0,0,0,0);
+                                
+                                const diferencaTempo = hojeObj - cObj;
+                                const diferencaDias = Math.floor(diferencaTempo / (1000 * 60 * 60 * 24));
+
+                                if (diferencaDias > 0) {
+                                    alertaAtraso = `<br><span style="color: #c0392b; font-size: 11px; font-weight: bold;">⚠️ ATRASADO HÁ ${diferencaDias} DIAS</span>`;
+                                } else {
+                                    alertaAtraso = `<br><span style="color: #27ae60; font-size: 11px; font-weight: bold;">⏱️ Vence dia ${dataVencFormatada}</span>`;
+                                }
+                            }
+                        }
+
+                        const textoProdutos = p.detalhe_produtos ? `Itens: ${p.detalhe_produtos}` : `Ref: Venda #${p.venda_id}`;
+
+                        const textoParcelamento =
+                           p.numero_parcelas && p.numero_parcelas > 1
+                             ? `<br><span style="color:#8f4f4a; font-size:11px; font-weight:700;">
+                              💳 ${p.numero_parcelas}x de ${formatarMoeda(p.valor_parcela)}
+                             </span>`
+                             : '';
+
+                        tabela.innerHTML += `
+                            <tr>
+                                <td><strong>${p.cliente_nome}</strong></td>
+                                <td><span class="ref-itens">${textoProdutos}</span></td>
+                                <td>${p.telefone || '<span style="color: #95a5a6; font-size: 12px;">Não Informado</span>'}</td>
+                                <td>${dataCompraFormatada}</td>
+                                <td><span style="color: #c0392b; font-weight: bold;">R$ ${p.valor_restante.toFixed(2)}
+                                    </span>
+                                    ${textoParcelamento}
+                                 </td>
+                                <td>
+                                    <span style="font-weight: bold; color: ${p.status === 'Aberto' ? '#c0392b' : '#f39c12'};">${p.status}</span>
+                                    ${alertaAtraso}
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    elemTotal.innerText = `R$ ${somaValor.toFixed(2).replace('.', ',')}`;
+                    elemQtd.innerText = clientesContados.size;
+                } else {
+                    tabela.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #777;">Nenhuma pendência ativa encontrada.</td></tr>`;
+                }
+            } catch(e) {
+                console.error(e);
+                tabela.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #c0392b;">Erro ao carregar os dados.</td></tr>`;
+            }
+        }
+
+        function gerarPDFPendencias() {
+            const lines = document.querySelectorAll("#tabela-pendencias tr");
+            const dados = [];
+            
+            lines.forEach(linha => {
+                const colunas = linha.querySelectorAll("td");
+                if (colunas.length === 6) {
+                    dados.push({
+                        cliente: colunas[0].innerText,
+                        ref: colunas[1].innerText,
+                        telefone: colunas[2].innerText,
+                        data_compra: colunas[3].innerText,
+                        saldo: colunas[4].innerText,
+                        situacao: colunas[5].innerText
+                    });
+                }
+            });
+
+            if (dados.length === 0) { return alert("Nenhum dado para exportar!"); }
+
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/api/relatorios/pendencias/pdf';
+            form.target = '_blank';
+
+            const input = document.createElement('input');
+            input.type = 'hidden'; 
+            input.name = 'pendencias';
+            input.value = JSON.stringify(dados);
+            
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+        }
+
+        window.onload = carregarPendencias;
+    </script>
+</body>
+</html>

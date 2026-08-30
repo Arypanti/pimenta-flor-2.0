@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pimenta Flor - Relatório de Estoque</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Estilo principal -->
+    <link rel="stylesheet" href="/style.css">
+
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* ================================
+           RESUMO DO ESTOQUE
+        ================================= */
+
+        .resumo-estoque {
+            display: flex;
+            gap: 20px;
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card-resumo {
+            background-color: var(--card-fundo, #ffffff);
+            border: 1px solid var(--borda-suave, #ebe4cb);
+            border-radius: 12px;
+            padding: 20px;
+            flex: 1;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+        }
+
+        .card-resumo h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: var(--texto-mutado, #998e83);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-resumo .valor {
+            font-size: 24px;
+            font-weight: bold;
+            color: #c0392b;
+            margin: 0;
+        }
+
+        /* ================================
+           TOPO DA PÁGINA
+        ================================= */
+
+        .topo-filtros {
+            margin-bottom: 10px;
+        }
+
+        .filtro-datas {
+            margin-top: 22px;
+            margin-bottom: 0;
+        }
+
+        .btn-exportar-estoque {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 11px 22px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 3px 8px rgba(39, 174, 96, 0.15);
+            transition: all 0.2s ease;
+        }
+
+        .btn-exportar-estoque:hover {
+            background-color: #219653;
+            transform: translateY(-1px);
+        }
+
+        /* ================================
+           ÁREA DE BUSCA
+        ================================= */
+
+        .cabecalho-estoque {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .descricao-estoque {
+            color: var(--texto-mutado);
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .campo-busca-estoque {
+            position: relative;
+            width: 100%;
+            max-width: 390px;
+        }
+
+        .campo-busca-estoque .icone-busca {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 17px;
+            pointer-events: none;
+        }
+
+        #buscaEstoque {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px 14px 12px 42px;
+            border: 1px solid var(--borda-suave, #ebe4cb);
+            border-radius: 12px;
+            background: #ffffff;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        #buscaEstoque:focus {
+            border-color: #c0392b;
+            box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.08);
+        }
+
+        #buscaEstoque::placeholder {
+            color: #998e83;
+        }
+
+        /* ================================
+           RESPONSIVIDADE
+        ================================= */
+
+        @media (max-width: 768px) {
+            .resumo-estoque {
+                flex-direction: column;
+            }
+
+            .cabecalho-estoque {
+                align-items: stretch;
+            }
+
+            .campo-busca-estoque {
+                max-width: 100%;
+            }
+
+            .tabela-clientes {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Menu Lateral -->
+    <div class="sidebar">
+
+        <div class="logo-container">
+            <div class="logo-circulo">P</div>
+
+            <div class="logo-texto">
+                <span class="logo-loja">Pimenta Flor</span>
+                <span class="logo-sub">Gestão da Loja</span>
+            </div>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--borda-suave); margin-bottom: 20px;">
+
+        <a href="/" class="menu-item">📋 Início</a>
+        <a href="/clientes" class="menu-item">👥 Clientes</a>
+        <a href="/produtos" class="menu-item">📦 Produtos</a>
+        <a href="/vendas" class="menu-item">🛒 Vendas</a>
+        <a href="/pendencias" class="menu-item">📖 Pendências</a>
+
+        <div class="menu-secao">Relatórios</div>
+
+        <a href="/relatorios/estoque" class="menu-item active">📊 Estoque</a>
+        <a href="/vendas/historico" class="menu-item">📈 Vendas</a>
+        <a href="/relatorios/pendencias" class="menu-item">📖 Pendências</a>
+
+    </div>
+
+    <!-- Conteúdo Principal -->
+    <div class="main-content">
+
+        <div class="topo-filtros">
+
+            <div>
+                <h1>Relatório de Estoque</h1>
+
+                <p class="subtitulo-tela" style="margin-bottom: 0;">
+                    Controle a quantidade de mercadorias disponíveis e produtos em falta.
+                </p>
+            </div>
+
+            <!-- Botão agora possui espaçamento próprio -->
+            <div class="filtro-datas">
+
+                <button
+                    class="btn-exportar-estoque"
+                    onclick="gerarPDFEstoque()">
+                    📄 Exportar PDF
+                </button>
+
+            </div>
+
+        </div>
+
+        <!-- Blocos de resumo -->
+        <div class="resumo-estoque">
+
+            <div class="card-resumo">
+
+                <h3>Total de Itens em Estoque</h3>
+
+                <p class="valor" id="total-itens">
+                    0 un.
+                </p>
+
+            </div>
+
+            <div class="card-resumo">
+
+                <h3>Valor Total do Estoque</h3>
+
+                <p
+                    class="valor"
+                    id="total-financeiro"
+                    style="color: #27ae60;">
+                    R$ 0,00
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- Card principal -->
+        <div class="card">
+
+            <div class="cabecalho-estoque">
+
+                <div>
+
+                    <h2 style="margin-bottom: 6px;">
+                        Posição Atual do Estoque
+                    </h2>
+
+                    <p class="descricao-estoque">
+                        Lista de produtos cadastrados, preços e níveis de armazenamento.
+                    </p>
+
+                </div>
+
+                <!-- NOVA BUSCA -->
+                <div class="campo-busca-estoque">
+
+                    <span class="icone-busca">🔎</span>
+
+                    <input
+                        id="buscaEstoque"
+                        type="search"
+                        placeholder="Buscar produto específico..."
+                        autocomplete="off">
+
+                </div>
+
+            </div>
+
+            <!-- Tabela -->
+            <table class="tabela-clientes" style="width: 100%;">
+
+                <thead>
+
+                    <tr>
+                        <th>ID</th>
+                        <th>Produto</th>
+                        <th>Preço Unitário</th>
+                        <th>Qtd. em Estoque</th>
+                        <th>Status</th>
+                    </tr>
+
+                </thead>
+
+                <tbody id="tabela-estoque">
+
+                    <tr>
+                        <td
+                            colspan="5"
+                            style="text-align: center; color: #777;">
+                            Carregando produtos...
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+    <script>
+
+    /* =====================================================
+       LISTA ORIGINAL DOS PRODUTOS
+    ====================================================== */
+
+    let produtosEstoque = [];
+
+
+    /* =====================================================
+       ESCAPA TEXTO PARA EVITAR QUE NOMES DE PRODUTOS
+       QUEBREM A TABELA
+    ====================================================== */
+
+    function escaparHTML(texto) {
+
+        return String(texto ?? '').replace(/[&<>"']/g, function (caractere) {
+
+            const mapa = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+
+            return mapa[caractere];
+
+        });
+
+    }
+
+
+    /* =====================================================
+       RENDERIZA A TABELA
+    ====================================================== */
+
+    function renderizarEstoque() {
+
+        const tabela = document.getElementById('tabela-estoque');
+
+        const campoBusca = document.getElementById('buscaEstoque');
+
+        const termo = campoBusca.value
+            .trim()
+            .toLowerCase();
+
+
+        /*
+         * Filtra pelo nome do produto.
+         *
+         * Exemplo:
+         * "camisola" encontra:
+         * Camisola
+         * Camisola Liga Nete
+         * Camisola Modelo Azul
+         */
+
+        const produtosFiltrados = produtosEstoque.filter(function (produto) {
+
+            const nome = String(produto.nome || '').toLowerCase();
+
+            return !termo || nome.includes(termo);
+
+        });
+
+
+        tabela.innerHTML = '';
+
+
+        /* Nenhum resultado */
+
+        if (produtosFiltrados.length === 0) {
+
+            tabela.innerHTML = `
+                <tr>
+                    <td
+                        colspan="5"
+                        style="
+                            text-align:center;
+                            color:#777;
+                            padding:28px;
+                        ">
+                        🔎 Nenhum produto encontrado para essa busca.
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+
+        /* Renderiza os produtos */
+
+        produtosFiltrados.forEach(function (p) {
+
+            let statusText = '';
+            let statusStyle = '';
+
+
+            if (Number(p.quantidade_estoque) <= 0) {
+
+                statusText = 'Esgotado';
+
+                statusStyle =
+                    'color:#c0392b;font-weight:bold;';
+
+            }
+
+            else if (Number(p.quantidade_estoque) <= 5) {
+
+                statusText = 'Estoque Baixo';
+
+                statusStyle =
+                    'color:#d35400;font-weight:bold;';
+
+            }
+
+            else {
+
+                statusText = 'Disponível';
+
+                statusStyle =
+                    'color:#27ae60;font-weight:bold;';
+
+            }
+
+
+            tabela.innerHTML += `
+                <tr>
+
+                    <td>#${p.id}</td>
+
+                    <td>
+                        <strong>
+                            ${escaparHTML(p.nome)}
+                        </strong>
+                    </td>
+
+                    <td>
+                        R$ ${Number(p.preco || 0)
+                            .toFixed(2)
+                            .replace('.', ',')}
+                    </td>
+
+                    <td>
+                        ${Number(p.quantidade_estoque || 0)} un.
+                    </td>
+
+                    <td style="${statusStyle}">
+                        ${statusText}
+                    </td>
+
+                </tr>
+            `;
+
+        });
+
+    }
+
+
+    /* =====================================================
+       CARREGA ESTOQUE DO BANCO
+    ====================================================== */
+
+    async function carregarEstoque() {
+
+        const tabela =
+            document.getElementById('tabela-estoque');
+
+        const elementoItens =
+            document.getElementById('total-itens');
+
+        const elementoFinanceiro =
+            document.getElementById('total-financeiro');
+
+
+        try {
+
+            const res =
+                await fetch('/api/relatorios/estoque/dados');
+
+
+            if (!res.ok) {
+
+                throw new Error(
+                    'Falha ao buscar os dados do estoque.'
+                );
+
+            }
+
+
+            produtosEstoque = await res.json();
+
+
+            /* Calcula os totais */
+
+            const somaItens =
+                produtosEstoque.reduce(function (soma, produto) {
+
+                    return soma +
+                        Number(produto.quantidade_estoque || 0);
+
+                }, 0);
+
+
+            const somaFinanceiro =
+                produtosEstoque.reduce(function (soma, produto) {
+
+                    return soma +
+                        (
+                            Number(produto.preco || 0) *
+                            Number(produto.quantidade_estoque || 0)
+                        );
+
+                }, 0);
+
+
+            /* Atualiza os cards */
+
+            elementoItens.innerText =
+                `${somaItens} un.`;
+
+
+            elementoFinanceiro.innerText =
+                `R$ ${somaFinanceiro
+                    .toFixed(2)
+                    .replace('.', ',')}`;
+
+
+            /* Renderiza a tabela */
+
+            renderizarEstoque();
+
+
+        } catch (erro) {
+
+            console.error(
+                'Erro ao carregar estoque:',
+                erro
+            );
+
+
+            tabela.innerHTML = `
+                <tr>
+                    <td
+                        colspan="5"
+                        style="
+                            text-align:center;
+                            color:#c0392b;
+                            padding:28px;
+                        ">
+                        ❌ Erro ao carregar os dados do banco.
+                    </td>
+                </tr>
+            `;
+
+        }
+
+    }
+
+
+    /* =====================================================
+       BUSCA EM TEMPO REAL
+    ====================================================== */
+
+    document
+        .getElementById('buscaEstoque')
+        .addEventListener('input', renderizarEstoque);
+
+
+    /* =====================================================
+       EXPORTAÇÃO PDF
+    ====================================================== */
+
+    function gerarPDFEstoque() {
+
+        const linhas =
+            document.querySelectorAll(
+                "#tabela-estoque tr"
+            );
+
+
+        const dadosEstoque = [];
+
+
+        linhas.forEach(function (linha) {
+
+            const colunas =
+                linha.querySelectorAll("td");
+
+
+            if (colunas.length >= 5) {
+
+                dadosEstoque.push({
+
+                    id: colunas[0].innerText,
+
+                    nome: colunas[1].innerText,
+
+                    preco: colunas[2].innerText,
+
+                    qtd: colunas[3].innerText,
+
+                    status: colunas[4].innerText
+
+                });
+
+            }
+
+        });
+
+
+        if (dadosEstoque.length === 0) {
+
+            alert(
+                "Nenhum dado na tabela para exportar!"
+            );
+
+            return;
+
+        }
+
+
+        const form =
+            document.createElement('form');
+
+
+        form.method = 'POST';
+
+        form.action =
+            '/api/relatorios/estoque/pdf';
+
+        form.target = '_blank';
+
+
+        const input =
+            document.createElement('input');
+
+
+        input.type = 'hidden';
+
+        input.name = 'estoque';
+
+        input.value =
+            JSON.stringify(dadosEstoque);
+
+
+        form.appendChild(input);
+
+        document.body.appendChild(form);
+
+        form.submit();
+
+        document.body.removeChild(form);
+
+    }
+
+
+    /* =====================================================
+       INICIALIZA A PÁGINA
+    ====================================================== */
+
+    window.addEventListener('load', function () {
+
+        carregarEstoque();
+
+    });
+
+</script>
+
+</body>
+</html>
+
+    

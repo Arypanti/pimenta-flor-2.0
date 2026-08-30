@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pimenta Flor - Início</title>
+<link rel="stylesheet" href="/style.css">
+<style>
+.hero-inicio{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:28px}
+.hero-inicio h1{margin-bottom:7px}.hero-inicio p{margin:0;color:#9a8f88}
+.data-hoje{background:#fff;border:1px solid #e8dfda;border-radius:15px;padding:12px 16px;color:#776d67;font-size:12px;font-weight:700}
+.cards-inicio{display:grid;grid-template-columns:repeat(4,1fr);gap:17px;margin-bottom:24px}
+.card-metrica{position:relative;overflow:hidden;background:#fff;border:1px solid #e8dfda;border-radius:20px;padding:20px;box-shadow:0 9px 30px rgba(75,57,49,.055);transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease}
+.card-metrica:hover{transform:translateY(-4px);box-shadow:0 14px 34px rgba(75,57,49,.10);border-color:#d9c4bb}
+.icone-metrica{width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;background:#f7eeea;font-size:20px;margin-bottom:17px}
+.card-metrica .rotulo{font-size:11px;font-weight:800;color:#9a8f88;text-transform:uppercase;letter-spacing:.05em}
+.card-metrica strong{display:block;font-size:25px;color:#332d2a;margin-top:7px}
+.card-metrica small{display:block;color:#a19892;margin-top:6px;font-size:11px}
+.grid-inicio{display:grid;grid-template-columns:1.35fr .85fr;gap:20px}
+.painel-inicio{background:#fff;border:1px solid #e8dfda;border-radius:20px;padding:21px;box-shadow:0 9px 30px rgba(75,57,49,.045)}
+.painel-titulo{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:18px}
+.painel-titulo h2{font-size:16px;margin:0;color:#403734}.painel-link{font-size:11px;color:#8f4f4a;text-decoration:none;font-weight:800}
+.lista-vendas{display:flex;flex-direction:column;gap:10px}
+.venda-recente{display:grid;grid-template-columns:58px 1fr auto;align-items:center;gap:12px;padding:12px;border:1px solid #f0e8e4;border-radius:14px;transition:.2s}
+.venda-recente:hover{background:#fcf8f6;transform:translateX(2px)}
+.venda-id{width:45px;height:45px;border-radius:13px;background:#f7eeea;display:flex;align-items:center;justify-content:center;color:#8f4f4a;font-size:11px;font-weight:800}
+.venda-info strong{display:block;font-size:12px;color:#433b37}.venda-info span{display:block;color:#a19892;font-size:10px;margin-top:4px}
+.venda-valor{font-weight:800;color:#403734;font-size:12px}
+.alerta-estoque{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border-radius:14px;background:#fff8eb;border:1px solid #f3e2bd;margin-bottom:10px}
+.alerta-estoque.zero{background:#fff0f0;border-color:#efd2d2}.alerta-estoque strong{display:block;font-size:12px;color:#4a403b}.alerta-estoque span{display:block;color:#9a8f88;font-size:10px;margin-top:4px}
+.pill{font-size:9px;font-weight:800;padding:6px 8px;border-radius:8px;background:#f5dfad;color:#8b641b}.zero .pill{background:#f0d0d0;color:#9a4141}
+.vazio-inicio{text-align:center;color:#a19892;font-size:12px;padding:25px 10px}
+.atalhos{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px}
+.atalho{display:block;text-decoration:none;color:#403734;background:#fff;border:1px solid #e8dfda;border-radius:16px;padding:15px;transition:.2s}
+.atalho:hover{transform:translateY(-3px);background:#fcf8f6;border-color:#d9c4bb}
+.atalho b{display:block;font-size:12px}.atalho span{display:block;color:#9a8f88;font-size:10px;margin-top:5px}
+@media(max-width:1050px){.cards-inicio{grid-template-columns:repeat(2,1fr)}.grid-inicio{grid-template-columns:1fr}}
+@media(max-width:600px){.cards-inicio,.atalhos{grid-template-columns:1fr}.hero-inicio{align-items:stretch}}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo-container">
+    <div class="logo-circulo">PF</div>
+    <div class="logo-texto"><div class="logo-loja">Pimenta Flor</div><div class="logo-sub">Gestão da loja</div></div>
+  </div>
+  <div class="menu-secao">Navegação</div>
+  <a href="/" class="menu-item active">🏠 Início</a>
+  <a href="/clientes" class="menu-item">👥 Clientes</a>
+  <a href="/produtos" class="menu-item">👙 Produtos</a>
+  <a href="/vendas" class="menu-item">🛒 Vendas</a>
+  <a href="/pendencias" class="menu-item">💰 Pendências</a>
+  <a href="/vendas/historico" class="menu-item">📊 Histórico de Vendas</a>
+  <a href="/relatorios/estoque" class="menu-item">📦 Relatório de Estoque</a>
+</div>
+
+<main class="main-content">
+  <div class="hero-inicio">
+    <div>
+      <h1 id="saudacao">Olá! 🌸</h1>
+      <p>Tenha uma visão rápida do que está acontecendo na Pimenta Flor.</p>
+    </div>
+    <div class="data-hoje" id="dataHoje"></div>
+  </div>
+
+  <section class="cards-inicio">
+    <div class="card-metrica">
+      <div class="icone-metrica">💰</div><span class="rotulo">Faturamento hoje</span>
+      <strong id="faturamento">R$ 0,00</strong><small>Vendas registradas no dia</small>
+    </div>
+    <div class="card-metrica">
+      <div class="icone-metrica">🛒</div><span class="rotulo">Vendas hoje</span>
+      <strong id="vendasHoje">0</strong><small>Pedidos realizados hoje</small>
+    </div>
+    <div class="card-metrica">
+      <div class="icone-metrica">💳</div><span class="rotulo">A receber</span>
+      <strong id="aReceber">R$ 0,00</strong><small id="pendenciasTexto">Pendências em aberto</small>
+    </div>
+    <div class="card-metrica">
+      <div class="icone-metrica">📦</div><span class="rotulo">Estoque em alerta</span>
+      <strong id="estoqueAlerta">0</strong><small id="estoqueTexto">Produtos precisam de atenção</small>
+    </div>
+  </section>
+
+  <section class="grid-inicio">
+    <div class="painel-inicio">
+      <div class="painel-titulo"><h2>🛒 Vendas recentes</h2><a class="painel-link" href="/vendas/historico">Ver histórico →</a></div>
+      <div id="vendasRecentes" class="lista-vendas"><div class="vazio-inicio">Carregando...</div></div>
+    </div>
+
+    <div class="painel-inicio">
+      <div class="painel-titulo"><h2>📦 Atenção no estoque</h2><a class="painel-link" href="/produtos">Ver produtos →</a></div>
+      <div id="alertasEstoque"><div class="vazio-inicio">Carregando...</div></div>
+    </div>
+  </section>
+
+  <section class="atalhos">
+    <a class="atalho" href="/vendas"><b>＋ Registrar venda</b><span>Adicionar uma nova compra</span></a>
+    <a class="atalho" href="/produtos/novo"><b>＋ Cadastrar produto</b><span>Adicionar item ao catálogo</span></a>
+    <a class="atalho" href="/pendencias"><b>💰 Ver pendências</b><span>Acompanhar valores em aberto</span></a>
+  </section>
+</main>
+
+<script>
+const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+function formatarDataVenda(data) {
+    if (!data) return '-';
+
+    const partes = String(data).split(' ');
+    const dataParte = partes[0];
+    const horaParte = partes[1] || '';
+
+    const [ano, mes, dia] = dataParte.split('-');
+
+    if (!ano || !mes || !dia) {
+        return data;
+    }
+
+    return `${dia}/${mes}/${ano}${horaParte ? ' · ' + horaParte.slice(0, 5) : ''}`;
+}
+const agora=new Date();
+const hora=agora.getHours();
+document.getElementById('saudacao').textContent=(hora<12?'Bom dia':hora<18?'Boa tarde':'Boa noite')+'! 🌸';
+document.getElementById('dataHoje').textContent=agora.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+
+async function carregarInicio() {
+    try {
+        const [rd, rh, rp] = await Promise.all([
+            fetch('/api/dashboard/resumo?_=' + Date.now(), {
+                cache: 'no-store'
+            }),
+            fetch('/api/relatorios/vendas/historico?_=' + Date.now(), {
+                cache: 'no-store'
+            }),
+            fetch('/api/produtos/dados?_=' + Date.now(), {
+                cache: 'no-store'
+            })
+        ]);
+
+        if (!rd.ok || !rh.ok || !rp.ok) {
+            throw new Error('Erro ao carregar dados do Dashboard.');
+        }
+
+        const resumo = await rd.json();
+        const hist = await rh.json();
+        const produtos = await rp.json();
+
+        console.log('RESUMO RECEBIDO PELO DASHBOARD:', resumo);
+        console.log('FATURAMENTO RECEBIDO:', resumo.vendas_dia);
+        console.log('VENDAS RECEBIDAS:', resumo.qtd_vendas);
+
+        /* =========================================================
+           FATURAMENTO E VENDAS DE HOJE
+           ========================================================= */
+
+        document.getElementById('faturamento').textContent =
+            money(resumo.vendas_dia);
+
+        document.getElementById('vendasHoje').textContent =
+            Number(resumo.qtd_vendas || 0);
+
+
+        /* =========================================================
+           PENDÊNCIAS / VALORES A RECEBER
+           ========================================================= */
+
+        const respostaPendencias =
+            await fetch('/api/pendencias/dados?_=' + Date.now(), {
+                cache: 'no-store'
+            });
+
+        const abertas = respostaPendencias.ok
+            ? await respostaPendencias.json()
+            : [];
+
+        const pendencias = Array.isArray(abertas)
+            ? abertas
+            : [];
+
+        const abertasFiltradas = pendencias.filter(
+            p => String(p.status || '').toLowerCase() !== 'quitado'
+        );
+
+        const receber = abertasFiltradas.reduce(
+            (s, p) => s + Number(
+                p.valor_restante ?? p.valor_original ?? 0
+            ),
+            0
+        );
+
+        document.getElementById('aReceber').textContent =
+            money(receber);
+
+        document.getElementById('pendenciasTexto').textContent =
+            abertasFiltradas.length +
+            ' pendência(s) em aberto';
+
+
+        /* =========================================================
+           ESTOQUE EM ALERTA
+           ========================================================= */
+
+        const alertas = produtos.filter(
+            p => Number(p.quantidade_estoque || 0) < 5
+        );
+
+        document.getElementById('estoqueAlerta').textContent =
+            alertas.length;
+
+        document.getElementById('estoqueTexto').textContent =
+            alertas.length
+                ? 'Produto(s) precisam de atenção'
+                : 'Estoque abastecido';
+
+
+        /* =========================================================
+           VENDAS RECENTES
+           ========================================================= */
+
+        const vendas =
+            Array.isArray(hist.vendas)
+                ? hist.vendas
+                : [];
+
+        const vr = document.getElementById('vendasRecentes');
+
+        if (!vendas.length) {
+
+            vr.innerHTML =
+                '<div class="vazio-inicio">' +
+                'Ainda não há vendas registradas.' +
+                '</div>';
+
+        } else {
+
+            vr.innerHTML = vendas
+                .slice(0, 6)
+                .map(v => `
+                    <div class="venda-recente">
+
+                        <div class="venda-id">
+                            #${esc(v.id)}
+                        </div>
+
+                        <div class="venda-info">
+                            <strong>
+                                ${esc(v.cliente_nome || 'Consumidor Final')}
+                            </strong>
+
+                            <span>
+                                ${formatarDataVenda(v.data_venda)}
+                                ·
+                                ${esc(v.tipo_pagamento || 'Pagamento')}
+                            </span>
+                        </div>
+
+                        <div class="venda-valor">
+                            ${money(v.total)}
+                        </div>
+
+                    </div>
+                `)
+                .join('');
+        }
+
+
+        /* =========================================================
+           ALERTAS DE ESTOQUE
+           ========================================================= */
+
+        const ae = document.getElementById('alertasEstoque');
+
+        if (!alertas.length) {
+
+            ae.innerHTML =
+                '<div class="vazio-inicio">' +
+                '✨ Nenhum produto em situação crítica.' +
+                '</div>';
+
+        } else {
+
+            ae.innerHTML = alertas
+                .slice(0, 6)
+                .map(p => {
+
+                    const zero =
+                        Number(p.quantidade_estoque || 0) <= 0;
+
+                    return `
+                        <div class="alerta-estoque ${zero ? 'zero' : ''}">
+
+                            <div>
+                                <strong>
+                                    ${esc(p.nome)}
+                                </strong>
+
+                                <span>
+                                    ${
+                                        zero
+                                            ? 'Produto zerado'
+                                            : 'Apenas ' +
+                                              Number(p.quantidade_estoque) +
+                                              ' unidade(s) disponíveis'
+                                    }
+                                </span>
+                            </div>
+
+                            <span class="pill">
+                                ${zero ? 'ZERADO' : 'BAIXO'}
+                            </span>
+
+                        </div>
+                    `;
+                })
+                .join('');
+        }
+
+    } catch (e) {
+
+        console.error(
+            'ERRO REAL DO CARREGAR INICIO:',
+            e
+        );
+
+        document.getElementById('vendasRecentes').innerHTML =
+            '<div class="vazio-inicio">' +
+            'Não foi possível carregar os dados.' +
+            '</div>';
+
+        document.getElementById('alertasEstoque').innerHTML =
+            '<div class="vazio-inicio">' +
+            'Não foi possível carregar os dados.' +
+            '</div>';
+    }
+}
+
+window.addEventListener('load', carregarInicio);
+</script>
+</body>
+</html>

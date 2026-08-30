@@ -1,0 +1,375 @@
+
+/* =========================================================
+   PIMENTA FLOR 2.0 — IDENTIDADE VISUAL GLOBAL
+   ========================================================= */
+:root{
+  --pf-bg:#f7f3f0;
+  --pf-surface:#ffffff;
+  --pf-surface-soft:#fcf8f6;
+  --pf-text:#403734;
+  --pf-text-strong:#302a27;
+  --pf-muted:#978d87;
+  --pf-primary:#8f4f4a;
+  --pf-primary-dark:#713d39;
+  --pf-primary-soft:#f7eeea;
+  --pf-border:#e8dfda;
+  --pf-shadow:0 10px 30px rgba(65,48,42,.055);
+  --pf-shadow-hover:0 16px 36px rgba(65,48,42,.10);
+  --pf-radius:18px;
+  --pf-radius-sm:12px;
+  --pf-transition:.22s ease;
+}
+
+*{box-sizing:border-box}
+
+html{scroll-behavior:smooth}
+
+body{
+  margin:0;
+  padding:0;
+  background:var(--pf-bg);
+  color:var(--pf-text);
+  font-family:'Plus Jakarta Sans','Segoe UI',Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+
+a{color:inherit}
+
+button,input,select,textarea{font:inherit}
+
+button,a,input,select{transition:var(--pf-transition)}
+
+.sidebar{
+  position:fixed;
+  inset:0 auto 0 0;
+  width:248px;
+  padding:25px 16px;
+  background:#fff;
+  border-right:1px solid var(--pf-border);
+  box-shadow:5px 0 24px rgba(65,48,42,.035);
+  z-index:50;
+  overflow-y:auto;
+}
+
+.logo-container{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  padding:5px 9px 25px;
+  border-bottom:1px solid #f0e9e5;
+  margin-bottom:22px;
+}
+
+.logo-circulo{
+  width:42px;
+  height:42px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:14px;
+  background:var(--pf-primary-soft);
+  color:var(--pf-primary);
+  font-size:14px;
+  font-weight:900;
+  letter-spacing:.03em;
+}
+
+.logo-texto{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    min-width:0;
+    line-height:1;
+}
+
+.logo-loja{
+    display:block;
+    color:var(--pf-text-strong);
+    font-size:17px;
+    font-weight:850;
+    letter-spacing:-.02em;
+    white-space:nowrap;
+}
+
+.logo-sub{
+    display:block;
+    margin-top:5px;
+    color:var(--pf-muted);
+    font-size:9px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    line-height:1.2;
+    white-space:nowrap;
+}
+
+.menu-secao{
+  padding:0 11px 9px;
+  color:#b0a6a0;
+  font-size:9px;
+  font-weight:850;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+}
+
+.menu-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-height:43px;
+  margin:4px 0;
+  padding:11px 12px;
+  border-radius:12px;
+  color:#756b66;
+  text-decoration:none;
+  font-size:12px;
+  font-weight:700;
+}
+
+.menu-item:hover{
+  background:#fcf8f6;
+  color:var(--pf-primary);
+  transform:translateX(2px);
+}
+
+.menu-item.active{
+  background:var(--pf-primary-soft);
+  color:var(--pf-primary);
+  box-shadow:inset 3px 0 0 var(--pf-primary);
+}
+
+.main-content{
+  min-height:100vh;
+  margin-left:248px;
+  padding:42px clamp(22px,4vw,54px);
+  width:calc(100% - 248px);
+  max-width:none;
+}
+
+h1,h2,h3,h4,p{margin-top:0}
+
+h1{
+  margin-bottom:8px;
+  color:var(--pf-text-strong);
+  font-size:clamp(25px,3vw,34px);
+  line-height:1.15;
+  letter-spacing:-.035em;
+}
+
+h2{color:var(--pf-text-strong)}
+h3{color:var(--pf-text-strong)}
+
+.main-content>p,
+.subtitulo-tela{
+  color:var(--pf-muted);
+  font-size:12px;
+  line-height:1.7;
+}
+
+.card,
+.form-cadastro{
+  background:var(--pf-surface);
+  border:1px solid var(--pf-border);
+  border-radius:var(--pf-radius);
+  box-shadow:var(--pf-shadow);
+}
+
+.card{padding:22px}
+
+.form-cadastro{
+  padding:24px;
+}
+
+.form-group{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+
+.form-group label,
+label{
+  color:#665c57;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.01em;
+}
+
+input,
+select,
+textarea{
+  width:100%;
+  min-height:43px;
+  padding:11px 13px;
+  color:var(--pf-text);
+  background:#fff;
+  border:1px solid var(--pf-border);
+  border-radius:11px;
+  outline:none;
+  font-size:12px;
+}
+
+input::placeholder,
+textarea::placeholder{color:#b6ada8}
+
+input:hover,select:hover,textarea:hover{
+  border-color:#d8c9c2;
+}
+
+input:focus,select:focus,textarea:focus{
+  border-color:#bd9a91;
+  box-shadow:0 0 0 4px rgba(143,79,74,.075);
+}
+
+.btn-pimenta{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:43px;
+  padding:11px 17px;
+  border:1px solid transparent;
+  border-radius:12px;
+  background:var(--pf-primary);
+  color:#fff !important;
+  text-decoration:none;
+  font-size:11px;
+  font-weight:800;
+  cursor:pointer;
+  box-shadow:0 6px 16px rgba(143,79,74,.16);
+}
+
+.btn-pimenta:hover{
+  background:var(--pf-primary-dark);
+  transform:translateY(-2px);
+  box-shadow:0 9px 20px rgba(143,79,74,.22);
+}
+
+.btn-pimenta:active{transform:translateY(0)}
+
+.tabela-clientes{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  overflow:hidden;
+  background:#fff;
+  border:1px solid var(--pf-border);
+  border-radius:var(--pf-radius);
+  box-shadow:var(--pf-shadow);
+}
+
+.tabela-clientes th{
+  padding:13px 15px;
+  background:#fcf8f6;
+  border-bottom:1px solid var(--pf-border);
+  color:#938780;
+  font-size:9px;
+  font-weight:850;
+  text-align:left;
+  text-transform:uppercase;
+  letter-spacing:.07em;
+}
+
+.tabela-clientes td{
+  padding:15px;
+  border-bottom:1px solid #f1ebe7;
+  color:#5d544f;
+  font-size:11px;
+  vertical-align:middle;
+}
+
+.tabela-clientes tbody tr:last-child td{border-bottom:0}
+
+.tabela-clientes tbody tr{
+  transition:background var(--pf-transition);
+}
+
+.tabela-clientes tbody tr:hover{background:#fdfaf8}
+
+.tabela-clientes td strong{color:var(--pf-text-strong)}
+
+.badge,
+.badge-status{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:6px 9px;
+  border-radius:9px;
+  font-size:9px;
+  font-weight:850;
+  letter-spacing:.01em;
+}
+
+.badge-ok{background:#e9f4ec;color:#39714a}
+.badge-baixo{background:#fff2dc;color:#9a6918}
+.badge-zero{background:#fbe5e5;color:#a14343}
+
+.btn-editar{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:8px 11px;
+  border:0;
+  border-radius:10px;
+  background:var(--pf-primary-soft);
+  color:var(--pf-primary);
+  text-decoration:none;
+  font-size:10px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.btn-editar:hover{
+  background:#f0e1dc;
+  transform:translateY(-1px);
+}
+
+.subtitulo{
+  color:var(--pf-muted);
+  font-size:12px;
+}
+
+@media(max-width:950px){
+  .sidebar{
+    width:215px;
+  }
+  .main-content{
+    margin-left:215px;
+    padding:32px 24px;
+  }
+}
+
+@media(max-width:700px){
+  .sidebar{
+    position:relative;
+    width:100%;
+    min-height:auto;
+    padding:15px;
+    border-right:0;
+    border-bottom:1px solid var(--pf-border);
+  }
+  .logo-container{
+    margin-bottom:12px;
+    padding-bottom:15px;
+  }
+  .menu-secao{display:none}
+  .menu-item{
+    display:inline-flex;
+    width:auto;
+    margin:3px 2px;
+  }
+  .main-content{
+    margin-left:0;
+    padding:28px 16px;
+  }
+  .tabela-clientes{
+    display:block;
+    overflow-x:auto;
+    white-space:nowrap;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    scroll-behavior:auto!important;
+    transition:none!important;
+  }
+}

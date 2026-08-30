@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pimenta Flor - Clientes</title>
+    
+    <!-- 1. Links do Google Fonts Corrigidos -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- 2. Seu arquivo de estilo externo -->
+    <link rel="stylesheet" href="/style.css">
+    
+    <style>
+        /* Aplica a fonte Inter bonita em todos os elementos desta tela */
+        * { 
+            font-family: 'Inter', sans-serif; 
+        }
+
+        .form-cadastro { background-color: #ffffff; padding: 20px; border-radius: 12px; border: 1px solid #e0dcd0; margin-bottom: 30px; }
+        .form-group { margin-bottom: 15px; display: inline-block; margin-right: 15px; vertical-align: top; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input { padding: 10px; border: 1px solid #e0dcd0; border-radius: 6px; width: 200px; }
+        .btn-pimenta { background-color: #c0392b; color: white; border: none; padding: 11px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 22px; }
+        .btn-pimenta:hover { background-color: #a62c21; }
+        .tabela-clientes { width: 100%; border-collapse: collapse; background-color: white; border-radius: 12px; overflow: hidden; border: 1px solid #e0dcd0; }
+        .tabela-clientes th, .tabela-clientes td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #e0dcd0; }
+        .tabela-clientes th { background-color: #fceceb; color: #c0392b; }
+        .btn-cancelar { background-color: #7f8c8d; color: white; border: none; padding: 11px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 22px; margin-left: 10px; display: none; }
+        .btn-cancelar:hover { background-color: #95a5a6; }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <div class="logo-loja">Pimenta Flor</div>
+        <a href="/" class="menu-item">📊 Início</a>
+        <a href="/clientes" class="menu-item active">👥 Clientes</a>
+        <a href="/produtos" class="menu-item">📦 Catálogo / Estoque</a>
+        <a href="/vendas" class="menu-item">💰 Registrar Venda</a>
+        <a href="/pendencias" class="menu-item">⚠️ Pendências</a>
+    </div>
+
+    <div class="main-content">
+        <h1>👥 Gestão de Clientes</h1>
+        <div class="form-cadastro">
+            <h3 id="titulo-formulario">📝 Cadastrar Nova Cliente</h3>
+            <form id="form-cliente" action="/api/clientes" method="POST" class="form-linha">
+                <div class="form-group">
+                    <label for="nome">Nome Completo:</label>
+                    <input type="text" id="nome" name="nome" required placeholder="Ex: Maria Silva">
+                </div>
+                <div class="form-group">
+                    <label for="telefone">Telefone / WhatsApp:</label>
+                    <input type="text" id="telefone" name="telefone" placeholder="Ex: (27) 99999-9999">
+                </div>
+                <div class="form-group">
+                    <label for="endereco">Endereço:</label>
+                    <input type="text" id="endereco" name="endereco" style="width: 300px;" placeholder="Rua, Número, Bairro">
+                </div>
+                <button type="submit" id="btn-salvar" class="btn-pimenta">➕ Cadastrar</button>
+                <button type="button" id="btn-cancelar" class="btn-cancelar" onclick="cancelarEdicao()">❌ Cancelar</button>
+            </form>
+        </div>
+
+        <h3>📋 Clientes Cadastradas</h3>
+        
+        <!-- Barra de Busca posicionada corretamente no HTML -->
+        <div class="busca-container" style="margin-bottom: 15px;">
+            <input type="text" id="inputBusca" onkeyup="filtrarClientes()" placeholder="🔍 Buscar cliente por nome..." style="padding: 10px; width: 100%; max-width: 300px; border: 1px solid #e0dcd0; border-radius: 6px;">
+        </div>
+
+        <table class="tabela-clientes">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Telefone</th>
+                    <th>Endereço</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="lista-clientes">
+                <tr>
+                    <td colspan="5" style="text-align: center; color: #777;">Nenhuma cliente cadastrada no banco ainda.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <script>
+        // Variável global para armazenar a lista de clientes carregada
+        let listaClientesLocal = [];
+
+        // Função de filtro em tempo real corrigida para ler a coluna do Nome (coluna índice 1)
+        function filtrarClientes() {
+            const input = document.getElementById("inputBusca");
+            const filtro = input.value.toLowerCase();
+            const tabela = document.querySelector(".tabela-clientes");
+            const linhas = tabela.getElementsByTagName("tr");
+
+            for (let i = 1; i < linhas.length; i++) {
+                // Modificado para, pois a segunda coluna (índice 1) guarda o Nome da cliente
+                const colunaNome = linhas[i].getElementsByTagName("td")[1]; 
+                if (colunaNome) {
+                    const textoNome = colunaNome.textContent || colunaNome.innerText;
+                    if (textoNome.toLowerCase().indexOf(filtro) > -1) {
+                        linhas[i].style.display = "";
+                    } else {
+                        linhas[i].style.display = "none";
+                    }
+                }
+            }
+        }
+
+        // Função automática que busca as clientes no banco de dados e coloca na tabela
+        async function carregarClientes() {
+            try {
+                const resposta = await fetch('/api/clientes/dados');
+                listaClientesLocal = await resposta.json();
+                const tabelaBody = document.getElementById('lista-clientes');
+                
+                if (listaClientesLocal.length > 0) {
+                    tabelaBody.innerHTML = ''; 
+                    
+                    listaClientesLocal.forEach(cliente => {
+                        tabelaBody.innerHTML += `
+                            <tr>
+                                <td>${cliente.id}</td>
+                                <td><strong>${cliente.nome}</strong></td>
+                                <td>${cliente.telefone || '-'}</td>
+                                <td>${cliente.endereco || '-'}</td>
+                                <td>
+                                    <button type="button" class="btn-pimenta" 
+                                            onclick="editarCliente(${cliente.id})" 
+                                            style="padding: 5px 10px; margin: 0; font-size: 12px; background-color: #3498db;">
+                                        ✏️ Editar
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    tabelaBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #777;">Nenhuma cliente cadastrada no banco ainda.</td></tr>`;
+                }
+            } catch (erro) {
+                console.error("Erro ao carregar a tabela de clientes:", erro);
+            }
+        }
+
+        // Função que preenche o formulário para edição na mesma tela
+        async function editarCliente(id) {
+            try {
+                const resposta = await fetch(`/api/clientes/${id}`);
+                const cliente = await resposta.json();
+                if (!resposta.ok) throw new Error(cliente.erro || 'Não foi possível carregar a cliente.');
+
+                document.getElementById('nome').value = cliente.nome || '';
+                document.getElementById('telefone').value = cliente.telefone || '';
+                document.getElementById('endereco').value = cliente.endereco || '';
+                document.getElementById('titulo-formulario').innerText = "✏️ Editar Cadastro da Cliente";
+
+                const formulario = document.getElementById('form-cliente');
+                formulario.action = `/api/clientes/editar/${id}`;
+                document.getElementById('btn-salvar').innerText = "💾 Salvar Alterações";
+                document.getElementById('btn-cancelar').style.display = "inline-block";
+                document.getElementById('nome').focus();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } catch (erro) {
+                console.error('Erro ao editar cliente:', erro);
+                alert(erro.message);
+            }
+        }
+
+        function cancelarEdicao() {
+            document.getElementById('form-cliente').reset();
+            document.getElementById('titulo-formulario').innerText = "📝 Cadastrar Nova Cliente";
+            document.getElementById('form-cliente').action = "/api/clientes";
+            document.getElementById('btn-salvar').innerText = "➕ Cadastrar";
+            document.getElementById('btn-cancelar').style.display = "none";
+        }
+
+        window.onload = carregarClientes;
+    </script>
+</body>
+</html>
